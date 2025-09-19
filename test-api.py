@@ -35,7 +35,7 @@ def test_api():
         print("\n2️⃣ Testing models API without token (should fail)...")
         
         try:
-            no_auth_response = requests.get(f"{BASE_URL}/api/models")
+            no_auth_response = requests.get(f"{BASE_URL}/api/models-demo")
             print("🚫 Status:", no_auth_response.status_code)
             print("🚫 Response:", no_auth_response.json())
         except Exception as e:
@@ -44,7 +44,7 @@ def test_api():
         # Step 3: Add a model using JWT token
         print("\n3️⃣ Adding a model with JWT token...")
         
-        add_model_response = requests.post(f"{BASE_URL}/api/models",
+        add_model_response = requests.post(f"{BASE_URL}/api/models-demo",
             json={
                 "name": "GPT-4",
                 "version": "4.0", 
@@ -62,7 +62,7 @@ def test_api():
         # Step 4: Fetch all models
         print("\n4️⃣ Fetching all models...")
         
-        get_models_response = requests.get(f"{BASE_URL}/api/models",
+        get_models_response = requests.get(f"{BASE_URL}/api/models-demo",
             headers={"Authorization": f"Bearer {token}"}
         )
         
