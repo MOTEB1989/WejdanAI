@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import traceback
 from typing import Any, Dict, List, Optional
 
 try:
@@ -39,7 +40,6 @@ def cmd_sync(args: argparse.Namespace) -> int:
         importer.require_env()
     except Exception as exc:
         print(f"❌ إعدادات البيئة غير مكتملة: {exc}")
-        import traceback
         traceback.print_exc()
         return 2
 
@@ -221,7 +221,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_val.set_defaults(func=cmd_validate)
 
     p_cfg = sub.add_parser(
-        "print-config", 
+        "print-config",
         help="Print effective configuration (WARNING: may contain sensitive data)."
     )
     p_cfg.set_defaults(func=cmd_print_config)
