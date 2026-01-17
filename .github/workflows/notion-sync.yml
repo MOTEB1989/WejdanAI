@@ -1,78 +1,76 @@
-name: Notion Sync (Codex)
+name: Codex Local Auth + Notion Sync
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
       - "**/*.json"
-      - "notion_importer.py"
       - "codex.py"
+      - "notion_importer.py"
       - "requirements.txt"
-      - ".github/workflows/notion-sync.yml"
-  schedule:
-    - cron: "0 2 * * *"
-  workflow_dispatch:
-    inputs:
-      update_existing:
-        description: "Update existing Notion pages matched by External ID"
-        required: false
-        default: "true"
-      file_pattern:
-        description: "JSON filename pattern to scan"
-        required: false
-        default: "chats.json"
-      repo_dir:
-        description: "Repository directory to scan"
-        required: false
-        default: "."
-      dry_run:
-        description: "Dry run (no writes to Notion)"
-        required: false
-        default: "false"
-
-permissions:
-  contents: read
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    runs-on: self-hosted
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---- Python ----
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Codex Sync (Upsert All Properties)
+      # ---- Node / WejdanAI ----
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install WejdanAI deps
+        run: |
+          pnpm install || npm install
+
+      - name: Start WejdanAI (local)
+        run: |
+          pnpm dev --host 127.0.0.1 --port 3000 & echo $! > wejdan.pid
+          sleep 6
+
+      # ---- JWT from WejdanAI itself ----
+      - name: Fetch JWT from local WejdanAI
+        env:
+          USERNAME: ${{ secrets.WEJDANAI_USERNAME }}
+          PASSWORD: ${{ secrets.WEJDANAI_PASSWORD }}
+        run: |
+          TOKEN=$(curl -sS -X POST "http://127.0.0.1:3000/api/auth" \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" \
+            | python - << 'PY'
+import sys, json
+print(json.load(sys.stdin)["token"])
+PY
+          )
+          echo "WEJDANAI_JWT=$TOKEN" >> $GITHUB_ENV
+
+      # ---- Codex / Notion Sync ----
+      - name: Run Codex Sync (Upsert)
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
-          NOTION_VERSION: "2022-06-28"
+          WEJDANAI_JWT: ${{ env.WEJDANAI_JWT }}
         run: |
-          REPO_DIR="${{ github.event.inputs.repo_dir }}"
-          FILE_PATTERN="${{ github.event.inputs.file_pattern }}"
-          UPDATE_EXISTING="${{ github.event.inputs.update_existing }}"
-          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          python codex.py sync --update-existing
 
-          if [ -z "$REPO_DIR" ]; then REPO_DIR="."; fi
-          if [ -z "$FILE_PATTERN" ]; then FILE_PATTERN="chats.json"; fi
-          if [ -z "$UPDATE_EXISTING" ]; then UPDATE_EXISTING="true"; fi
-          if [ -z "$DRY_RUN" ]; then DRY_RUN="false"; fi
-
-          CMD="python codex.py sync --repo-dir \"$REPO_DIR\" --file-pattern \"$FILE_PATTERN\""
-
-          if [ "$UPDATE_EXISTING" = "true" ]; then
-            CMD="$CMD --update-existing"
-          fi
-
-          if [ "$DRY_RUN" = "true" ]; then
-            CMD="$CMD --dry-run"
-          fi
-
-          echo "Running: $CMD"
-          eval $CMD
+      # ---- Cleanup ----
+      - name: Stop WejdanAI
+        if: always()
+        run: |
+          if [ -f wejdan.pid ]; then kill $(cat wejdan.pid) || true; fi
