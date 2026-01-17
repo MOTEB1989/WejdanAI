@@ -49,3 +49,25 @@ pnpm preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## CLI (اختياري)
+
+تشغيل مزامنة محلية:
+
+```bash
+export NOTION_TOKEN="..."
+export DATABASE_ID="..."
+python codex.py sync
+```
+
+Dry-run:
+
+```bash
+python codex.py sync --dry-run
+```
+
+التحقق من ملف محادثات:
+
+```bash
+python codex.py validate --file chats.json
+```
