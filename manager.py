@@ -127,7 +127,6 @@ class WejdanAIManager:
         }
 
         try:
-            has_more = True
             next_cursor = None
             while True:
                 if next_cursor:
