@@ -13,3 +13,9 @@ dist
 
 # Development test files
 test-logging-api.js
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
