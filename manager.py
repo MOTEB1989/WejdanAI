@@ -127,7 +127,6 @@ class WejdanAIManager:
         }
 
         try:
-            has_more = True
             next_cursor = None
             while True:
                 if next_cursor:
@@ -144,9 +143,13 @@ class WejdanAIManager:
                         txt = t.get("text", {}).get("content") or t.get("plain_text") or ""
                         if txt == external_id:
                             return True, r.get("id")
-                if not data.get("has_more"):
+                has_more = data.get("has_more", False)
+                if not has_more:
                     break
                 next_cursor = data.get("next_cursor")
+                if next_cursor is None:
+                    # Safety check: break if cursor is None even if has_more is True
+                    break
             return False, None
         except requests.exceptions.RequestException as e:
             print(f"❌ Failed to query Notion for external ID {external_id}: {e}")
@@ -329,8 +332,8 @@ class WejdanAIManager:
                     "category": "Testing",
                     "content": "This is a test chat for the sync functionality."
                 }
-                success = self.sync_chat_to_notion(test_chat, dry_run=False)
-                if success not in ("created", "updated"):
+                result = self.sync_chat_to_notion(test_chat, dry_run=False)
+                if result not in ("created", "updated"):
                     raise RuntimeError("Notion sync test failed.")
                 print("✅ Notion sync test passed.")
 
