@@ -14,6 +14,11 @@ except ImportError as e:
     raise
 
 
+# Default values for chat fields (used when fields are missing)
+DEFAULT_AI_TOOL = "Other"
+DEFAULT_CATEGORY = "بحث"
+
+
 def _print_json(obj: Any) -> None:
     print(json.dumps(obj, ensure_ascii=False, indent=2))
 
@@ -24,11 +29,18 @@ def cmd_sync(args: argparse.Namespace) -> int:
       - يقرأ ملفات المحادثات من المستودع
       - يرسل الجديد فقط إلى Notion (بفضل External ID)
       - يدعم dry-run لعرض ما سيتم إرساله بدون إرسال فعلي
+    
+    Exit codes:
+      0 = success (all chats synced successfully)
+      1 = failures occurred during sync
+      2 = environment configuration error
     """
     try:
         importer.require_env()
     except Exception as exc:
         print(f"❌ إعدادات البيئة غير مكتملة: {exc}")
+        import traceback
+        traceback.print_exc()
         return 2
 
     repo_dir = args.repo
@@ -42,11 +54,16 @@ def cmd_sync(args: argparse.Namespace) -> int:
     all_chats: List[Dict[str, Any]] = []
     for file_path in files:
         print(f"🔍 قراءة الملف: {file_path}")
-        all_chats.extend(importer.load_chats_from_file(file_path))
+        try:
+            chats = importer.load_chats_from_file(file_path)
+            all_chats.extend(chats)
+        except Exception as exc:
+            print(f"❌ فشل قراءة الملف {file_path}: {exc}")
+            return 1
 
     print(f"📊 عدد المحادثات المكتشفة: {len(all_chats)}")
 
-    ok = 0
+    successfully_synced = 0
     skipped = 0
     failed = 0
 
@@ -59,7 +76,13 @@ def cmd_sync(args: argparse.Namespace) -> int:
         title = str(chat.get("title", "محادثة غير معنونة"))
         external_id = importer.stable_external_id(chat)
 
-        exists, page_id = importer.notion_page_exists_by_external_id(external_id)
+        try:
+            exists, page_id = importer.notion_page_exists_by_external_id(external_id)
+        except Exception as exc:
+            print(f"❌ تعذر التحقق من وجود الصفحة في Notion لـ external_id={external_id}: {exc}")
+            failed += 1
+            continue
+
         if exists:
             print(f"↩️ موجودة مسبقًا: {title} | page_id={page_id}")
             skipped += 1
@@ -67,15 +90,19 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
         if args.dry_run:
             print(f"🧪 (dry-run) سيتم إرسال: {title} | external_id={external_id}")
-            ok += 1
+            successfully_synced += 1
             continue
 
-        if importer.add_chat_to_notion(chat):
-            ok += 1
-        else:
+        try:
+            if importer.add_chat_to_notion(chat):
+                successfully_synced += 1
+            else:
+                failed += 1
+        except Exception as exc:
+            print(f"❌ فشل إرسال المحادثة إلى Notion: {title} | external_id={external_id} | الخطأ: {exc}")
             failed += 1
 
-    print(f"✅ انتهى sync. جديد/مرسل: {ok} | متجاهل: {skipped} | فشل: {failed}")
+    print(f"✅ انتهى sync. جديد/مرسل: {successfully_synced} | متجاهل: {skipped} | فشل: {failed}")
     return 0 if failed == 0 else 1
 
 
@@ -86,7 +113,25 @@ def cmd_validate(args: argparse.Namespace) -> int:
       - ويعرض external_id لكل محادثة (مفيد قبل الرفع)
     """
     file_path = args.file
-    chats = importer.load_chats_from_file(file_path)
+    
+    try:
+        chats = importer.load_chats_from_file(file_path)
+    except FileNotFoundError:
+        print(f"❌ لم يتم العثور على الملف: {file_path}")
+        return 1
+    except json.JSONDecodeError as exc:
+        print(f"❌ فشل في قراءة JSON من الملف: {file_path}")
+        print(f"   التفاصيل: {exc}")
+        return 1
+    except OSError as exc:
+        print(f"❌ تعذر قراءة الملف: {file_path}")
+        print(f"   التفاصيل: {exc}")
+        return 1
+    except Exception as exc:
+        print(f"❌ حدث خطأ غير متوقع أثناء تحميل الملف: {file_path}")
+        print(f"   التفاصيل: {exc}")
+        return 1
+    
     if not chats:
         print("❌ لا توجد محادثات أو تنسيق غير صحيح.")
         return 1
@@ -96,15 +141,28 @@ def cmd_validate(args: argparse.Namespace) -> int:
         if not isinstance(chat, dict):
             report.append({"index": index, "ok": False, "reason": "not_a_dict"})
             continue
-        external_id = importer.stable_external_id(chat)
+        
+        try:
+            external_id = importer.stable_external_id(chat)
+        except Exception as exc:
+            report.append(
+                {
+                    "index": index,
+                    "ok": False,
+                    "reason": "stable_external_id_error",
+                    "error": str(exc),
+                }
+            )
+            continue
+        
         report.append(
             {
                 "index": index,
                 "ok": True,
                 "title": chat.get("title", "محادثة غير معنونة"),
                 "external_id": external_id,
-                "ai_tool": chat.get("ai_tool", "Other"),
-                "category": chat.get("category", "بحث"),
+                "ai_tool": chat.get("ai_tool", DEFAULT_AI_TOOL),
+                "category": chat.get("category", DEFAULT_CATEGORY),
             }
         )
 
@@ -116,16 +174,19 @@ def cmd_print_config(_: argparse.Namespace) -> int:
     """
     print-config:
       - يعرض إعدادات Notion الفعالة (بدون طباعة التوكن)
+      
+    Warning: This command outputs configuration values that may contain
+    sensitive information. Use with caution in shared environments.
     """
     cfg = {
         "DATABASE_ID": os.getenv("DATABASE_ID"),
         "NOTION_VERSION": os.getenv("NOTION_VERSION", "2022-06-28"),
-        "PROP_TITLE": importer.PROP_TITLE,
-        "PROP_AI_TOOL": importer.PROP_AI_TOOL,
-        "PROP_CATEGORY": importer.PROP_CATEGORY,
-        "PROP_STATUS": importer.PROP_STATUS,
-        "PROP_CONTENT": importer.PROP_CONTENT,
-        "PROP_EXTERNAL_ID": importer.PROP_EXTERNAL_ID,
+        "PROP_TITLE": getattr(importer, "PROP_TITLE", None),
+        "PROP_AI_TOOL": getattr(importer, "PROP_AI_TOOL", None),
+        "PROP_CATEGORY": getattr(importer, "PROP_CATEGORY", None),
+        "PROP_STATUS": getattr(importer, "PROP_STATUS", None),
+        "PROP_CONTENT": getattr(importer, "PROP_CONTENT", None),
+        "PROP_EXTERNAL_ID": getattr(importer, "PROP_EXTERNAL_ID", None),
     }
     _print_json(cfg)
     return 0
@@ -159,7 +220,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_val.add_argument("--file", required=True, help="Path to chats JSON file.")
     p_val.set_defaults(func=cmd_validate)
 
-    p_cfg = sub.add_parser("print-config", help="Print effective configuration (safe).")
+    p_cfg = sub.add_parser(
+        "print-config", 
+        help="Print effective configuration (WARNING: may contain sensitive data)."
+    )
     p_cfg.set_defaults(func=cmd_print_config)
 
     return parser

@@ -52,6 +52,33 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 
 ## CLI (اختياري)
 
+### Overview / نظرة عامة
+
+The `codex.py` CLI tool provides commands for syncing AI chat conversations to Notion with automatic deduplication. It requires the `notion_importer` module to be present in the repository.
+
+### Prerequisites / المتطلبات
+
+- Python 3.x
+- `notion_importer.py` module (must be present in the repository)
+- Notion API token and Database ID (set as environment variables)
+
+### Chat File Format / تنسيق ملف المحادثات
+
+The CLI expects a JSON file (default: `chats.json`) containing an array of chat objects with the following structure:
+
+```json
+[
+  {
+    "title": "Chat title",
+    "ai_tool": "ChatGPT",
+    "category": "بحث",
+    "content": "Chat content..."
+  }
+]
+```
+
+### Usage / الاستخدام
+
 تشغيل مزامنة محلية:
 
 ```bash
@@ -71,3 +98,15 @@ python codex.py sync --dry-run
 ```bash
 python codex.py validate --file chats.json
 ```
+
+عرض الإعدادات الفعالة:
+
+```bash
+python codex.py print-config
+```
+
+### Exit Codes / رموز الخروج
+
+- `0`: Success
+- `1`: Sync failures occurred or validation error
+- `2`: Environment configuration error
