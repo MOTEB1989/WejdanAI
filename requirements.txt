@@ -1,1 +1,12 @@
+# Core
 requests
+
+# BSM (Excel processing)
+pandas
+openpyxl
+
+# Word reports
+python-docx
+
+# Optional: better HTML text extraction for shared chat pages
+beautifulsoup4
