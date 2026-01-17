@@ -3,8 +3,12 @@ import os
 import requests
 
 # ⚙️ معلومات التكامل
-NOTION_TOKEN = os.getenv("NOTION_TOKEN", "secret_xxxxxxxxxx")  # Internal Integration Token
-DATABASE_ID = os.getenv("DATABASE_ID", "abc123def456")  # معرف قاعدة البيانات
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")  # Internal Integration Token
+DATABASE_ID = os.getenv("DATABASE_ID")  # معرف قاعدة البيانات
+
+if not NOTION_TOKEN or not DATABASE_ID:
+    print("⚠️ يرجى تعيين متغيرات البيئة NOTION_TOKEN و DATABASE_ID")
+    exit(1)
 
 headers = {
     "Authorization": f"Bearer {NOTION_TOKEN}",

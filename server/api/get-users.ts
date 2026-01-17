@@ -1,8 +1,17 @@
+import { defineEventHandler } from 'h3'
 import postgres from 'postgres'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+// Initialize database connection - will fail gracefully if no connection string
+let sql: ReturnType<typeof postgres> | null = null
+if (process.env.POSTGRES_URL) {
+  sql = postgres(process.env.POSTGRES_URL, { ssl: 'require' })
+}
 
 async function seed() {
+  if (!sql) {
+    throw new Error('Database connection not configured')
+  }
+
   const createTable = await sql`
     CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
@@ -39,7 +48,12 @@ async function seed() {
     users,
   }
 }
+
 export default defineEventHandler(async () => {
+  if (!sql) {
+    return { error: 'Database connection not configured' }
+  }
+
   const startTime = Date.now()
   try {
     const users = await sql`SELECT * FROM profiles`
