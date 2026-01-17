@@ -18,6 +18,12 @@ relatedTemplates:
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
+## Repository Status | حالة المستودع
+
+**English:** This is a **public** repository. Anyone can view and fork this repository. The `"private": true` field in `package.json` only indicates that this package should not be published to the npm registry, not that the GitHub repository is private.
+
+**العربية:** هذا مستودع **عام**. يمكن لأي شخص عرض هذا المستودع ونسخه. حقل `"private": true` في ملف `package.json` يشير فقط إلى أن هذه الحزمة لا ينبغي نشرها في سجل npm، وليس أن مستودع GitHub خاص.
+
 ## Setup
 
 Make sure to install the dependencies:
