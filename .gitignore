@@ -12,4 +12,6 @@ dist
 *.tsbuildinfo
 
 # Development test files
-test-logging-api.js
+test-logging-api.js__pycache__/
+*.pyc
+.pytest_cache/

@@ -59,15 +59,16 @@ class ModelRouter:
 
     def _detect_language(self, text: str) -> Optional[str]:
         """Detect the primary language of the text."""
-        # Arabic detection
-        arabic_pattern = re.compile(r'[\u0600-\u06FF\u0750-\u077F]+')
+        # Arabic detection - count actual characters
+        arabic_pattern = re.compile(r'[\u0600-\u06FF\u0750-\u077F]')
         arabic_chars = len(arabic_pattern.findall(text))
 
-        # Chinese detection
-        chinese_pattern = re.compile(r'[\u4e00-\u9fff]+')
+        # Chinese detection - count actual characters
+        chinese_pattern = re.compile(r'[\u4e00-\u9fff]')
         chinese_chars = len(chinese_pattern.findall(text))
 
-        total_chars = len(text)
+        # Count only alphanumeric and script characters
+        total_chars = len(re.findall(r'[\w\u0600-\u06FF\u4e00-\u9fff]', text))
         if total_chars == 0:
             return None
 
