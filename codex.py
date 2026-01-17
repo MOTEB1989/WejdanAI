@@ -4,7 +4,14 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-import notion_importer as importer
+try:
+    import notion_importer as importer
+except ImportError as e:
+    print("❌ Error: required module `notion_importer` not found.")
+    print(
+        "   Please ensure `notion_importer.py` exists in the repo and is imported correctly.\n"
+    )
+    raise
 
 
 def _print_json(obj: Any) -> None:
