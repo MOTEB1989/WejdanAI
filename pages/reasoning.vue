@@ -310,7 +310,16 @@ const showSettings = ref(false)
 const messagesContainer = ref(null)
 const textareaRef = ref(null)
 
-const API_BASE = 'http://localhost:8001'
+// Use current hostname for API calls (works on mobile/desktop)
+const getApiBase = () => {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname
+    return `http://${hostname}:8001`
+  }
+  return 'http://localhost:8001'
+}
+
+const API_BASE = getApiBase()
 
 // Auto-scroll to bottom when new messages arrive
 async function scrollToBottom() {
