@@ -310,10 +310,20 @@ const showSettings = ref(false)
 const messagesContainer = ref(null)
 const textareaRef = ref(null)
 
-// Use current hostname for API calls (works on mobile/desktop)
+// Use current hostname for API calls (works on mobile/desktop/Codespaces)
 const getApiBase = () => {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname
+    const protocol = window.location.protocol
+
+    // Check if we're in GitHub Codespaces
+    if (hostname.includes('github.dev')) {
+      // Replace port 3000 with 8001 in Codespaces URL
+      const backendHost = hostname.replace('-3000.', '-8001.')
+      return `${protocol}//${backendHost}`
+    }
+
+    // Local development or network access
     return `http://${hostname}:8001`
   }
   return 'http://localhost:8001'
