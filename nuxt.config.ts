@@ -9,6 +9,12 @@ export default defineNuxtConfig({
     },
   },
 
+  runtimeConfig: {
+    public: {
+      reasoningApiUrl: process.env.NUXT_PUBLIC_REASONING_API_URL || '',
+    },
+  },
+
   app: {
     head: {
       title: 'WejdanAI - Reasoning Assistant',

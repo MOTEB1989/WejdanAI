@@ -1,4 +1,6 @@
 {
-  "buildCommand": "pnpm turbo build",
-  "ignoreCommand": "pnpm dlx turbo-ignore"
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nuxtjs"
 }

@@ -310,8 +310,15 @@ const showSettings = ref(false)
 const messagesContainer = ref(null)
 const textareaRef = ref(null)
 
-// Use current hostname for API calls (works on mobile/desktop/Codespaces)
+// Use environment variable or auto-detect API base URL
 const getApiBase = () => {
+  // 1. Check for environment variable (Vercel deployment)
+  const config = useRuntimeConfig()
+  if (config.public.reasoningApiUrl) {
+    return config.public.reasoningApiUrl
+  }
+
+  // 2. Auto-detect based on current location
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname
     const protocol = window.location.protocol
@@ -326,6 +333,7 @@ const getApiBase = () => {
     // Local development or network access
     return `http://${hostname}:8001`
   }
+
   return 'http://localhost:8001'
 }
 
