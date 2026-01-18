@@ -2,9 +2,19 @@
   <main class="min-h-screen bg-slate-950 text-slate-100">
     <div class="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12">
       <header class="space-y-4">
-        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
-          Operations playbook
-        </p>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+              Operations playbook
+            </p>
+          </div>
+          <NuxtLink
+            to="/reasoning"
+            class="rounded-lg border border-blue-500/50 bg-blue-600/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-600/30"
+          >
+            🧠 Reasoning Assistant
+          </NuxtLink>
+        </div>
         <h1 class="text-4xl font-semibold leading-tight text-white sm:text-5xl">
           Operations in Banking (COP)
         </h1>
