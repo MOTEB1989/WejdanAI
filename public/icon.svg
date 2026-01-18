@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="#3B82F6"/>
+
+  <!-- Brain Icon -->
+  <g transform="translate(128, 128)">
+    <!-- Main brain shape -->
+    <path d="M128 32C92.654 32 64 60.654 64 96c0 14.354 4.74 27.573 12.748 38.228C69.014 143.236 64 155.644 64 169c0 35.346 28.654 64 64 64 14.356 0 27.764-5.014 38.772-13.748C177.427 227.26 190.646 232 205 232c35.346 0 64-28.654 64-64 0-14.354-4.74-27.573-12.748-38.228C263.986 120.764 269 108.356 269 95c0-35.346-28.654-64-64-64-14.356 0-27.764 5.014-38.772 13.748C155.573 36.74 142.354 32 128 32z" fill="white" opacity="0.9"/>
+
+    <!-- Neural connections -->
+    <circle cx="80" cy="96" r="12" fill="white"/>
+    <circle cx="176" cy="96" r="12" fill="white"/>
+    <circle cx="128" cy="160" r="12" fill="white"/>
+    <circle cx="200" cy="160" r="12" fill="white"/>
+
+    <!-- Connection lines -->
+    <line x1="80" y1="96" x2="176" y2="96" stroke="white" stroke-width="4" opacity="0.6"/>
+    <line x1="128" y1="160" x2="200" y2="160" stroke="white" stroke-width="4" opacity="0.6"/>
+    <line x1="80" y1="96" x2="128" y2="160" stroke="white" stroke-width="4" opacity="0.6"/>
+    <line x1="176" y1="96" x2="200" y2="160" stroke="white" stroke-width="4" opacity="0.6"/>
+  </g>
+
+  <!-- Text -->
+  <text x="256" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">AI</text>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "name": "WejdanAI Reasoning Assistant",
+  "short_name": "WejdanAI",
+  "description": "Advanced AI Reasoning Assistant powered by o1, Gemini, DeepSeek",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "education"]
+}
