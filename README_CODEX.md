@@ -1,4 +1,4 @@
-# Codex (WejdanAI) — Notion Sync
+# Codex (LexPRO) — Notion Sync
 
 ## What it does
 - Reads chats JSON from repo

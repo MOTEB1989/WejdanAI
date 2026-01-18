@@ -1,6 +1,6 @@
 # Logging System Documentation
 
-This documentation describes the new logging system API endpoint for the WejdanAI project.
+This documentation describes the new logging system API endpoint for the LexPRO project.
 
 ## API Endpoint
 
