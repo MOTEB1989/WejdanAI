@@ -10,6 +10,9 @@ dist
 .vercel
 .turbo
 *.tsbuildinfo
+__pycache__
+*.pyc
+*.pyo
 
 # Development test files
 test-logging-api.js
