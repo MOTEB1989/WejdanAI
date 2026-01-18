@@ -1,17 +1,68 @@
+# Dependabot configuration for WejdanAI
+# تكوين Dependabot للتحديثات التلقائية
+
 version: 2
 updates:
+  # npm/pnpm dependencies for Nuxt project
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "MOTEB1989"
+    assignees:
+      - "MOTEB1989"
+    labels:
+      - "dependencies"
+      - "automated"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    versioning-strategy: increase
+    groups:
+      nuxt:
+        patterns:
+          - "nuxt*"
+          - "@nuxt/*"
+      vue:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+      ai-engines:
+        patterns:
+          - "openai"
+          - "anthropic"
+          - "@anthropic-ai/*"
+      development:
+        dependency-type: "development"
+
+  # Python dependencies (if any)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
     labels:
-      - "automerge"
+      - "dependencies"
+      - "python"
+      - "automated"
 
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "03:00"
     open-pull-requests-limit: 5
+    reviewers:
+      - "MOTEB1989"
     labels:
-      - "automerge"
+      - "github-actions"
+      - "automated"
+    commit-message:
+      prefix: "ci"
