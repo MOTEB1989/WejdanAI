@@ -1,0 +1,558 @@
+import os
+import time
+import uuid
+import json
+import re
+import asyncio
+from typing import Optional, Dict, Any, List, Union
+from pathlib import Path
+
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import httpx
+
+# --- Configuration & Storage ---
+DATA_DIR = Path("./data")
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+class Storage:
+    @staticmethod
+    def _file(name: str) -> Path:
+        return DATA_DIR / f"{name}.json"
+
+    @staticmethod
+    def read(name: str, default: Any) -> Any:
+        path = Storage._file(name)
+        if not path.exists():
+            return default
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    @staticmethod
+    def write(name: str, obj: Any):
+        Storage._file(name).write_text(
+            json.dumps(obj, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+
+# --- Reasoning Models Configuration ---
+class ReasoningConnection(BaseModel):
+    """Configuration for reasoning-specialized models"""
+    provider: str
+    enabled: bool = True
+    api_key: str = ""
+    endpoint: Optional[str] = None
+    default_model: str = "default"
+
+    # Reasoning-specific metadata
+    capabilities: List[str] = Field(default_factory=list)  # ["math", "logic", "code", "analysis"]
+    reasoning_mode: str = "chain_of_thought"  # "chain_of_thought", "tree_of_thought", "deep_reasoning"
+    max_thinking_time: int = 60  # Maximum seconds for reasoning
+    complexity_score: int = 5  # 1-10, higher means better at complex tasks
+
+class ReasoningTask(BaseModel):
+    """Request for reasoning task"""
+    query: str
+    task_type: str = "general"  # general | mathematical | logical | analytical | coding
+    preference: str = "accuracy"  # accuracy | complexity | speed | cost
+    context: Dict[str, Any] = Field(default_factory=dict)
+    enable_chain_tracking: bool = True  # Track reasoning steps
+    max_iterations: int = 1  # For iterative reasoning
+
+# --- Reasoning Response ---
+class ReasoningStep(BaseModel):
+    """Individual step in chain of thought"""
+    step_number: int
+    thought: str
+    conclusion: str
+    confidence: float = 0.0  # 0.0 to 1.0
+
+class ReasoningResponse(BaseModel):
+    """Response from reasoning model"""
+    answer: str
+    provider: str
+    model: str
+    latency_ms: int
+
+    # Reasoning-specific fields
+    reasoning_steps: List[ReasoningStep] = Field(default_factory=list)
+    complexity_score: float = 0.0  # Estimated complexity of the problem
+    confidence_score: float = 0.0  # Model's confidence in answer
+    thinking_tokens: int = 0  # Tokens used for reasoning (for models like o1)
+
+    raw: Optional[Dict[str, Any]] = None
+
+# --- Reasoning Orchestrator ---
+class ReasoningOrchestrator:
+    """
+    Specialized orchestrator for advanced reasoning models.
+    Handles: OpenAI o1, Gemini Deep Thinking, Llama-3.1-405B, DeepSeek-R1
+    """
+
+    def __init__(self):
+        self.supported_providers = {
+            "openai_o1": {
+                "name": "OpenAI o1",
+                "models": ["o1-preview", "o1-mini"],
+                "endpoint": "https://api.openai.com/v1/chat/completions",
+                "capabilities": ["math", "logic", "code", "analysis", "scientific"]
+            },
+            "gemini_thinking": {
+                "name": "Google Gemini Deep Thinking",
+                "models": ["gemini-2.0-flash-thinking-exp", "gemini-2.0-flash-thinking-exp-1219"],
+                "endpoint": "https://generativelanguage.googleapis.com/v1beta/models",
+                "capabilities": ["math", "logic", "multimodal", "analysis"]
+            },
+            "llama_405b": {
+                "name": "Meta Llama 3.1 405B",
+                "models": ["meta-llama/Meta-Llama-3.1-405B-Instruct"],
+                "endpoint": None,  # Needs to be configured (e.g., Together AI, Replicate)
+                "capabilities": ["math", "logic", "code", "multilingual"]
+            },
+            "deepseek_r1": {
+                "name": "DeepSeek R1",
+                "models": ["deepseek-reasoner", "deepseek-r1"],
+                "endpoint": "https://api.deepseek.com/v1/chat/completions",
+                "capabilities": ["math", "logic", "code", "reasoning_chain"]
+            },
+            "deepseek_r1_0528": {
+                "name": "DeepSeek R1-0528",
+                "models": ["deepseek-r1-0528"],
+                "endpoint": "https://api.deepseek.com/v1/chat/completions",
+                "capabilities": ["math", "logic", "code", "reasoning_chain", "enhanced"]
+            }
+        }
+
+    async def call_with_retry(self, func, *args, **kwargs):
+        """Retry logic with exponential backoff"""
+        retries = 5
+        for i in range(retries):
+            try:
+                return await func(*args, **kwargs)
+            except Exception as e:
+                if i == retries - 1:
+                    raise e
+                await asyncio.sleep(2**i)
+        return None
+
+    async def generate_openai_o1(
+        self,
+        query: str,
+        api_key: str,
+        model: str,
+        timeout: int = 60
+    ) -> ReasoningResponse:
+        """Call OpenAI o1 models (designed for reasoning)"""
+        start = time.time()
+        endpoint = "https://api.openai.com/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ],
+            # o1 models have specific parameters
+            "max_completion_tokens": 4096
+        }
+
+        async def _call():
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(endpoint, json=payload, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+
+        data = await self.call_with_retry(_call)
+        choice = data.get("choices", [{}])[0]
+        text = choice.get("message", {}).get("content", "Error")
+
+        # Extract reasoning tokens if available
+        usage = data.get("usage", {})
+        thinking_tokens = usage.get("completion_tokens_details", {}).get("reasoning_tokens", 0)
+
+        return ReasoningResponse(
+            answer=text,
+            provider="openai_o1",
+            model=model,
+            latency_ms=int((time.time() - start) * 1000),
+            thinking_tokens=thinking_tokens,
+            raw=data
+        )
+
+    async def generate_gemini_thinking(
+        self,
+        query: str,
+        api_key: str,
+        model: str = "gemini-2.0-flash-thinking-exp",
+        timeout: int = 60
+    ) -> ReasoningResponse:
+        """Call Gemini Deep Thinking models"""
+        start = time.time()
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        payload = {
+            "contents": [
+                {
+                    "parts": [{"text": query}]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 8192
+            }
+        }
+
+        async def _call():
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(url, json=payload)
+                resp.raise_for_status()
+                return resp.json()
+
+        data = await self.call_with_retry(_call)
+
+        # Gemini response structure
+        candidates = data.get("candidates", [])
+        if not candidates:
+            raise Exception("No response from Gemini")
+
+        content = candidates[0].get("content", {})
+        parts = content.get("parts", [])
+
+        # Extract thinking and response
+        reasoning_steps = []
+        final_answer = ""
+
+        for part in parts:
+            if "thought" in part:
+                reasoning_steps.append(
+                    ReasoningStep(
+                        step_number=len(reasoning_steps) + 1,
+                        thought=part.get("thought", ""),
+                        conclusion=part.get("text", ""),
+                        confidence=0.8
+                    )
+                )
+            if "text" in part:
+                final_answer += part.get("text", "")
+
+        return ReasoningResponse(
+            answer=final_answer,
+            provider="gemini_thinking",
+            model=model,
+            latency_ms=int((time.time() - start) * 1000),
+            reasoning_steps=reasoning_steps,
+            raw=data
+        )
+
+    async def generate_llama_405b(
+        self,
+        query: str,
+        api_key: str,
+        endpoint: str,
+        model: str = "meta-llama/Meta-Llama-3.1-405B-Instruct",
+        timeout: int = 60
+    ) -> ReasoningResponse:
+        """Call Llama 3.1 405B (via provider like Together AI, Replicate, etc.)"""
+        start = time.time()
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+        # Use chain-of-thought prompting for better reasoning
+        enhanced_query = f"""Think through this step by step:
+
+{query}
+
+Please provide:
+1. Your reasoning process
+2. Your final answer"""
+
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are an expert reasoning assistant. Think step by step and show your reasoning process."
+                },
+                {
+                    "role": "user",
+                    "content": enhanced_query
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 4096
+        }
+
+        async def _call():
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(endpoint, json=payload, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+
+        data = await self.call_with_retry(_call)
+        text = data.get("choices", [{}])[0].get("message", {}).get("content", "Error")
+
+        # Parse reasoning steps from response
+        reasoning_steps = self._parse_reasoning_steps(text)
+
+        return ReasoningResponse(
+            answer=text,
+            provider="llama_405b",
+            model=model,
+            latency_ms=int((time.time() - start) * 1000),
+            reasoning_steps=reasoning_steps,
+            raw=data
+        )
+
+    async def generate_deepseek_r1(
+        self,
+        query: str,
+        api_key: str,
+        model: str = "deepseek-reasoner",
+        timeout: int = 60
+    ) -> ReasoningResponse:
+        """Call DeepSeek R1 reasoning models"""
+        start = time.time()
+        endpoint = "https://api.deepseek.com/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": query
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 4096
+        }
+
+        async def _call():
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.post(endpoint, json=payload, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+
+        data = await self.call_with_retry(_call)
+        choice = data.get("choices", [{}])[0]
+        text = choice.get("message", {}).get("content", "Error")
+
+        # DeepSeek R1 includes reasoning in the response
+        reasoning_content = choice.get("message", {}).get("reasoning_content", "")
+        reasoning_steps = []
+
+        if reasoning_content:
+            reasoning_steps = self._parse_reasoning_steps(reasoning_content)
+
+        return ReasoningResponse(
+            answer=text,
+            provider="deepseek_r1",
+            model=model,
+            latency_ms=int((time.time() - start) * 1000),
+            reasoning_steps=reasoning_steps,
+            raw=data
+        )
+
+    def _parse_reasoning_steps(self, text: str) -> List[ReasoningStep]:
+        """Parse reasoning steps from model response"""
+        steps = []
+
+        # Try to extract numbered steps
+        pattern = r'(?:Step |المرحلة |الخطوة )?(\d+)[.:]?\s*(.+?)(?=(?:Step |المرحلة |الخطوة )?\d+[.:]|\Z)'
+        matches = re.finditer(pattern, text, re.DOTALL | re.IGNORECASE)
+
+        for match in matches:
+            step_num = int(match.group(1))
+            content = match.group(2).strip()
+
+            steps.append(
+                ReasoningStep(
+                    step_number=step_num,
+                    thought=content[:200] + "..." if len(content) > 200 else content,
+                    conclusion=content.split('\n')[-1] if '\n' in content else content,
+                    confidence=0.75
+                )
+            )
+
+        return steps
+
+    def get_routing_order(self, preference: str, task_type: str) -> List[str]:
+        """
+        Determine optimal routing order based on preference and task type
+
+        Preferences:
+        - accuracy: Prioritize most accurate models
+        - complexity: Prioritize models good at complex reasoning
+        - speed: Prioritize faster models
+        - cost: Prioritize cheaper models
+        """
+
+        routing_strategies = {
+            "accuracy": {
+                "mathematical": ["deepseek_r1_0528", "openai_o1", "gemini_thinking", "deepseek_r1", "llama_405b"],
+                "logical": ["openai_o1", "deepseek_r1_0528", "deepseek_r1", "gemini_thinking", "llama_405b"],
+                "analytical": ["openai_o1", "gemini_thinking", "deepseek_r1_0528", "llama_405b", "deepseek_r1"],
+                "coding": ["deepseek_r1_0528", "openai_o1", "llama_405b", "deepseek_r1", "gemini_thinking"],
+                "general": ["openai_o1", "deepseek_r1_0528", "gemini_thinking", "deepseek_r1", "llama_405b"]
+            },
+            "complexity": {
+                "default": ["openai_o1", "deepseek_r1_0528", "llama_405b", "deepseek_r1", "gemini_thinking"]
+            },
+            "speed": {
+                "default": ["gemini_thinking", "deepseek_r1", "llama_405b", "deepseek_r1_0528", "openai_o1"]
+            },
+            "cost": {
+                "default": ["llama_405b", "deepseek_r1", "deepseek_r1_0528", "gemini_thinking", "openai_o1"]
+            }
+        }
+
+        # Get routing order
+        strategy = routing_strategies.get(preference, routing_strategies["accuracy"])
+        route = strategy.get(task_type, strategy.get("default", strategy["general"]))
+
+        return route
+
+    async def reason(self, task: ReasoningTask) -> ReasoningResponse:
+        """
+        Main reasoning method - routes to appropriate model based on task
+        """
+        conns = Storage.read("reasoning_connections", {})
+
+        # Get routing order
+        route = self.get_routing_order(task.preference, task.task_type)
+
+        errors = []
+        for provider_id in route:
+            conn_data = conns.get(provider_id)
+            if not conn_data or not conn_data.get("enabled"):
+                continue
+
+            try:
+                api_key = conn_data.get("api_key")
+                model = conn_data.get("default_model")
+
+                # Route to appropriate provider
+                if provider_id == "openai_o1":
+                    result = await self.generate_openai_o1(task.query, api_key, model or "o1-preview")
+
+                elif provider_id == "gemini_thinking":
+                    result = await self.generate_gemini_thinking(task.query, api_key, model or "gemini-2.0-flash-thinking-exp")
+
+                elif provider_id == "llama_405b":
+                    endpoint = conn_data.get("endpoint")
+                    if not endpoint:
+                        raise Exception("Llama 405B requires endpoint configuration")
+                    result = await self.generate_llama_405b(task.query, api_key, endpoint, model or "meta-llama/Meta-Llama-3.1-405B-Instruct")
+
+                elif provider_id in ["deepseek_r1", "deepseek_r1_0528"]:
+                    result = await self.generate_deepseek_r1(task.query, api_key, model or "deepseek-reasoner")
+
+                else:
+                    raise Exception(f"Unknown provider: {provider_id}")
+
+                # Log successful reasoning
+                logs = Storage.read("reasoning_logs", [])
+                logs.append({
+                    "ts": time.time(),
+                    "provider": result.provider,
+                    "model": result.model,
+                    "latency": result.latency_ms,
+                    "task_type": task.task_type,
+                    "preference": task.preference,
+                    "query_len": len(task.query),
+                    "steps_count": len(result.reasoning_steps),
+                    "thinking_tokens": result.thinking_tokens
+                })
+                Storage.write("reasoning_logs", logs[-100:])
+
+                return result
+
+            except Exception as e:
+                errors.append({"provider": provider_id, "error": str(e)})
+                continue
+
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "msg": "All reasoning providers failed",
+                "errors": errors
+            }
+        )
+
+# --- FastAPI App ---
+app = FastAPI(title="Reasoning Orchestrator API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+reasoning_orchestrator = ReasoningOrchestrator()
+
+@app.get("/")
+def root():
+    return {
+        "service": "Reasoning Orchestrator",
+        "version": "1.0.0",
+        "description": "Advanced reasoning models orchestration for complex tasks"
+    }
+
+@app.get("/api/reasoning/config")
+def get_reasoning_config():
+    """Get reasoning models configuration"""
+    return {
+        "connections": Storage.read("reasoning_connections", {}),
+        "supported_providers": reasoning_orchestrator.supported_providers,
+        "settings": Storage.read("reasoning_settings", {
+            "default_preference": "accuracy",
+            "enable_chain_tracking": True,
+            "max_reasoning_time": 60
+        })
+    }
+
+@app.post("/api/reasoning/connections")
+def save_reasoning_connections(data: Dict[str, ReasoningConnection]):
+    """Save reasoning models connections"""
+    Storage.write("reasoning_connections", {k: v.dict() for k, v in data.items()})
+    return {"status": "saved"}
+
+@app.post("/api/reasoning/reason")
+async def reason_task(task: ReasoningTask):
+    """
+    Execute reasoning task with advanced models
+
+    Example:
+    {
+        "query": "Solve: If x^2 + 5x + 6 = 0, what are the values of x?",
+        "task_type": "mathematical",
+        "preference": "accuracy",
+        "enable_chain_tracking": true
+    }
+    """
+    return await reasoning_orchestrator.reason(task)
+
+@app.get("/api/reasoning/logs")
+def get_reasoning_logs(limit: int = 50):
+    """Get recent reasoning logs"""
+    logs = Storage.read("reasoning_logs", [])
+    return {"logs": logs[-limit:]}
+
+@app.get("/api/reasoning/providers")
+def list_providers():
+    """List all supported reasoning providers"""
+    return {
+        "providers": reasoning_orchestrator.supported_providers
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

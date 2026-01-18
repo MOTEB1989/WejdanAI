@@ -1,0 +1,57 @@
+{
+  "openai_o1": {
+    "provider": "openai_o1",
+    "enabled": true,
+    "api_key": "sk-your-openai-key-here",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "default_model": "o1-preview",
+    "capabilities": ["math", "logic", "code", "analysis", "scientific"],
+    "reasoning_mode": "chain_of_thought",
+    "max_thinking_time": 60,
+    "complexity_score": 10
+  },
+  "gemini_thinking": {
+    "provider": "gemini_thinking",
+    "enabled": true,
+    "api_key": "your-gemini-api-key-here",
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models",
+    "default_model": "gemini-2.0-flash-thinking-exp",
+    "capabilities": ["math", "logic", "multimodal", "analysis"],
+    "reasoning_mode": "deep_reasoning",
+    "max_thinking_time": 45,
+    "complexity_score": 9
+  },
+  "llama_405b": {
+    "provider": "llama_405b",
+    "enabled": false,
+    "api_key": "your-together-ai-or-replicate-key",
+    "endpoint": "https://api.together.xyz/v1/chat/completions",
+    "default_model": "meta-llama/Meta-Llama-3.1-405B-Instruct",
+    "capabilities": ["math", "logic", "code", "multilingual"],
+    "reasoning_mode": "chain_of_thought",
+    "max_thinking_time": 30,
+    "complexity_score": 8
+  },
+  "deepseek_r1": {
+    "provider": "deepseek_r1",
+    "enabled": true,
+    "api_key": "your-deepseek-key-here",
+    "endpoint": "https://api.deepseek.com/v1/chat/completions",
+    "default_model": "deepseek-reasoner",
+    "capabilities": ["math", "logic", "code", "reasoning_chain"],
+    "reasoning_mode": "chain_of_thought",
+    "max_thinking_time": 40,
+    "complexity_score": 9
+  },
+  "deepseek_r1_0528": {
+    "provider": "deepseek_r1_0528",
+    "enabled": true,
+    "api_key": "your-deepseek-key-here",
+    "endpoint": "https://api.deepseek.com/v1/chat/completions",
+    "default_model": "deepseek-r1-0528",
+    "capabilities": ["math", "logic", "code", "reasoning_chain", "enhanced"],
+    "reasoning_mode": "chain_of_thought",
+    "max_thinking_time": 50,
+    "complexity_score": 10
+  }
+}
