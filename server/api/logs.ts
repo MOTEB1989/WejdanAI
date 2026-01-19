@@ -1,4 +1,4 @@
-import { defineEventHandler, readBody } from 'h3'
+import { defineEventHandler, readBody, setResponseStatus } from 'h3'
 import postgres from 'postgres'
 
 // Initialize database connection - will fail gracefully if no connection string
@@ -35,13 +35,16 @@ export default defineEventHandler(async (event) => {
     // Retrieve all logs
     try {
       if (!sql) {
+        setResponseStatus(event, 500)
         return { error: 'Database connection not configured' }
       }
       await ensureLogsTable()
       const result = await sql`SELECT * FROM logs ORDER BY created_at DESC`
+      setResponseStatus(event, 200)
       return result
     } catch (error) {
       console.error('Error fetching logs:', error)
+      setResponseStatus(event, 500)
       return { error: 'Failed to fetch logs' }
     }
   }
@@ -53,26 +56,31 @@ export default defineEventHandler(async (event) => {
       const { user_id, query, response } = body
 
       if (!query || !response) {
+        setResponseStatus(event, 400)
         return { error: "⚠️ Both 'query' and 'response' are required." }
       }
 
       if (!sql) {
+        setResponseStatus(event, 500)
         return { error: 'Database connection not configured' }
       }
 
       await ensureLogsTable()
       const result = await sql`
-        INSERT INTO logs (user_id, query, response) 
-        VALUES (${user_id || null}, ${query}, ${response}) 
+        INSERT INTO logs (user_id, query, response)
+        VALUES (${user_id || null}, ${query}, ${response})
         RETURNING *
       `
 
+      setResponseStatus(event, 201)
       return { message: '✅ Log saved successfully', log: result[0] }
     } catch (error) {
       console.error('Error saving log:', error)
+      setResponseStatus(event, 500)
       return { error: 'Failed to save log' }
     }
   }
 
+  setResponseStatus(event, 405)
   return { error: 'Method not allowed' }
 })
