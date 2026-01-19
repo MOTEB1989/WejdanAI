@@ -11,6 +11,7 @@ dist
 .turbo
 *.tsbuildinfo
 package-lock.json
+yarn.lock
 
 # Development test files
 test-logging-api.js
