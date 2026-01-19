@@ -21,6 +21,10 @@ DEFAULT_MODEL = "gemini-1.5-flash"
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 2048
 
+# Timeout constants (in seconds)
+TIMEOUT_QUALITY = 30
+TIMEOUT_SPEED = 15
+
 class Storage:
     @staticmethod
     def _file(name: str) -> Path: return DATA_DIR / f"{name}.json"
@@ -192,7 +196,7 @@ async def run_task(req: RunRequest):
             max_tokens = conn_data.get('max_tokens', DEFAULT_MAX_TOKENS)
             
             # Adjust timeout based on preference
-            timeout = 30 if req.preference == "quality" else 15
+            timeout = TIMEOUT_QUALITY if req.preference == "quality" else TIMEOUT_SPEED
             
             if provider_id == "gemini":
                 res = await orchestrator.generate_gemini(query, key, model, timeout, temperature, max_tokens)
