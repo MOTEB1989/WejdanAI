@@ -140,6 +140,8 @@ Deploy to Vercel:
 2. Set environment variables in Vercel dashboard
 3. Deploy
 
+For comprehensive Vercel documentation and features, see [docs/VERCEL_DOCS.md](docs/VERCEL_DOCS.md).
+
 ## Project Structure
 
 - `app.vue` - Main Nuxt app entry
@@ -148,6 +150,7 @@ Deploy to Vercel:
 - `server/` - Server-side API routes
 - `assets/` - Static assets
 - `public/` - Public files
+- `docs/` - Documentation files
 - `scripts/` - Additional scripts
 - `codex.py` - Codex synchronization script
 - `notion_importer.py` - Notion importer script
