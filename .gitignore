@@ -10,7 +10,13 @@ dist
 .vercel
 .turbo
 *.tsbuildinfo
+__pycache__
+*.pyc
 
 # Development test files
 test-logging-api.js
 node-compile-cache/
+
+# Lock files for other package managers (project uses pnpm)
+package-lock.json
+yarn.lock
