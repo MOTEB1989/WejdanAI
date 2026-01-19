@@ -13,3 +13,4 @@ dist
 
 # Development test files
 test-logging-api.js
+node-compile-cache/
