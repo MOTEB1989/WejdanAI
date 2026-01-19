@@ -11,6 +11,16 @@ dist
 .turbo
 *.tsbuildinfo
 
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+
 # Development test files
 test-logging-api.js
 node-compile-cache/
