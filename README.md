@@ -111,6 +111,8 @@ python codex.py sync --dry-run          # Preview changes
 
 The logging API is documented in [LOGGING_API.md](LOGGING_API.md).
 
+For DeepSeek AI provider integration, see [DEEPSEEK_PROVIDER.md](DEEPSEEK_PROVIDER.md).
+
 Base URL: `https://wejdanai.vercel.app/api/logs`
 
 ### POST /api/logs
@@ -153,6 +155,7 @@ Deploy to Vercel:
 - `notion_importer.py` - Notion importer script
 - `LLM` & `LordAI` - AI-related executables/scripts
 - `README_CODEX.md` - Additional codex documentation
+- `DEEPSEEK_PROVIDER.md` - DeepSeek AI provider documentation
 
 ## Contributing
 
