@@ -16,6 +16,11 @@ import httpx
 DATA_DIR = Path("./data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# Default AI model parameters
+DEFAULT_MODEL = "gemini-1.5-flash"
+DEFAULT_TEMPERATURE = 0.7
+DEFAULT_MAX_TOKENS = 2048
+
 class Storage:
     @staticmethod
     def _file(name: str) -> Path: return DATA_DIR / f"{name}.json"
@@ -36,9 +41,9 @@ class Connection(BaseModel):
     enabled: bool = True
     api_key: str = ""
     endpoint: Optional[str] = None
-    default_model: str = "gemini-1.5-flash"
-    temperature: float = 0.7
-    max_tokens: int = 2048
+    default_model: str = DEFAULT_MODEL
+    temperature: float = DEFAULT_TEMPERATURE
+    max_tokens: int = DEFAULT_MAX_TOKENS
 
 class WorkflowStep(BaseModel):
     name: str
@@ -80,7 +85,7 @@ class LLMOrchestrator:
                 await asyncio.sleep(2**i)
         return None
 
-    async def generate_gemini(self, query: str, api_key: str, model: str, timeout: int, temperature: float = 0.7, max_tokens: int = 2048) -> ProviderResponse:
+    async def generate_gemini(self, query: str, api_key: str, model: str, timeout: int, temperature: float = DEFAULT_TEMPERATURE, max_tokens: int = DEFAULT_MAX_TOKENS) -> ProviderResponse:
         start = time.time()
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         payload = {
@@ -108,7 +113,7 @@ class LLMOrchestrator:
             raw=data
         )
 
-    async def generate_openai_compatible(self, query: str, api_key: str, endpoint: str, model: str, provider_name: str, timeout: int, temperature: float = 0.7, max_tokens: int = 2048) -> ProviderResponse:
+    async def generate_openai_compatible(self, query: str, api_key: str, endpoint: str, model: str, provider_name: str, timeout: int, temperature: float = DEFAULT_TEMPERATURE, max_tokens: int = DEFAULT_MAX_TOKENS) -> ProviderResponse:
         start = time.time()
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         payload = {
@@ -182,9 +187,9 @@ async def run_task(req: RunRequest):
         try:
             p_name = conn_data['provider']
             key = conn_data['api_key']
-            model = conn_data.get('default_model', 'gemini-1.5-flash')
-            temperature = conn_data.get('temperature', 0.7)
-            max_tokens = conn_data.get('max_tokens', 2048)
+            model = conn_data.get('default_model', DEFAULT_MODEL)
+            temperature = conn_data.get('temperature', DEFAULT_TEMPERATURE)
+            max_tokens = conn_data.get('max_tokens', DEFAULT_MAX_TOKENS)
             
             # Adjust timeout based on preference
             timeout = 30 if req.preference == "quality" else 15
