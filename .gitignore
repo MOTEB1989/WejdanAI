@@ -12,4 +12,5 @@ dist
 *.tsbuildinfo
 
 # Development test files
-test-logging-api.jsnode-compile-cache/
+test-logging-api.js
+node-compile-cache/
