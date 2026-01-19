@@ -10,6 +10,7 @@ dist
 .vercel
 .turbo
 *.tsbuildinfo
+package-lock.json
 
 # Development test files
 test-logging-api.js

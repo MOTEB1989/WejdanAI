@@ -4,6 +4,7 @@
   "license": "MIT",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -12,7 +13,7 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
-    "@types/node": "^18",
+    "@types/node": "^22",
     "autoprefixer": "^10.4.14",
     "nuxt": "^3.4.2",
     "postcss": "^8.4.23",
