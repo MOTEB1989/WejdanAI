@@ -1,5 +1,18 @@
 # دليل الوصول إلى واجهة WejdanAI / WejdanAI Access Guide
 
+## 📸 لقطة شاشة للواجهة / Interface Screenshot
+
+![WejdanAI Interface](https://github.com/user-attachments/assets/fe62ecdd-2a4d-41de-bc8d-873eebae3de4)
+
+**الواجهة الرئيسية تعرض / Main Interface Shows:**
+- لوحة تحكم العمليات المصرفية / Banking Operations Dashboard
+- 6 أقسام رئيسية منظمة / 6 Organized Main Sections
+- تصميم حديث ومتجاوب / Modern and Responsive Design
+- نظام الأولويات (P1, P2, P3) / Priority System (P1, P2, P3)
+- واجهة مظلمة احترافية / Professional Dark Theme
+
+---
+
 ## 🌐 روابط الوصول / Access Links
 
 ### الإنتاج / Production
@@ -32,10 +45,27 @@
    # تثبيت التبعيات / Install dependencies
    pnpm install
    
+   # التحقق من الإعداد / Verify setup
+   ./scripts/verify.sh
+   
    # تشغيل خادم التطوير / Run development server
    pnpm dev
    
    # الوصول على / Access at: http://localhost:3000
+   ```
+
+3. **سكريبت التحقق السريع / Quick Verification Script**:
+   ```bash
+   # تشغيل سكريبت التحقق / Run verification script
+   ./scripts/verify.sh
+   
+   # This will check / سيتحقق من:
+   # ✅ Node.js installation
+   # ✅ pnpm installation  
+   # ✅ Python installation (optional)
+   # ✅ Dependencies
+   # ✅ Build status
+   # ✅ Key files
    ```
 
 ---
