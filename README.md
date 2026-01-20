@@ -18,6 +18,14 @@ relatedTemplates:
 
 A comprehensive AI application built with Nuxt.js, featuring a Postgres database, AI chat logging, and Notion integration for codex synchronization.
 
+## 🚀 Quick Start / البدء السريع
+
+**للوصول الفوري للتطبيق / For Immediate Access:**
+- 🌐 **Live App**: https://wejdanai.vercel.app
+- 📖 **Full Access Guide**: [ACCESS_GUIDE.md](ACCESS_GUIDE.md) - دليل شامل بالعربية والإنجليزية
+- 💬 **Chat API**: https://wejdanai.vercel.app/api/logs
+- 📚 **API Documentation**: [LOGGING_API.md](LOGGING_API.md)
+
 ## Features
 
 - **Frontend**: Nuxt 3 application with Tailwind CSS for a modern UI
