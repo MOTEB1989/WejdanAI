@@ -142,6 +142,70 @@ console.log(logs);
 
 ---
 
+## 👥 API المستخدمين / Users API
+
+### نظام المستخدمين / Users System
+
+التطبيق يحتوي على API لإدارة ملفات المستخدمين:
+The application has an API for managing user profiles:
+
+#### الحصول على المستخدمين / Get Users
+
+```bash
+# جلب جميع المستخدمين / Fetch all users
+curl https://wejdanai.vercel.app/api/get-users
+```
+
+#### الاستجابة / Response
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "User Name",
+      "email": "user@example.com",
+      "image": "https://example.com/image.jpg",
+      "createdAt": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "duration": 45
+}
+```
+
+### مثال بايثون / Python Example
+
+```python
+import requests
+
+# جلب المستخدمين / Fetch users
+response = requests.get("https://wejdanai.vercel.app/api/get-users")
+data = response.json()
+
+print(f"عدد المستخدمين: {len(data['users'])}")
+print(f"المدة: {data['duration']}ms")
+
+for user in data['users']:
+    print(f"- {user['name']} ({user['email']})")
+```
+
+### مثال JavaScript / JavaScript Example
+
+```javascript
+// جلب المستخدمين / Fetch users
+const response = await fetch('https://wejdanai.vercel.app/api/get-users');
+const data = await response.json();
+
+console.log(`Number of users: ${data.users.length}`);
+console.log(`Duration: ${data.duration}ms`);
+
+data.users.forEach(user => {
+  console.log(`- ${user.name} (${user.email})`);
+});
+```
+
+---
+
 ## 📋 النماذج والمكونات / Forms and Components
 
 ### واجهة المستخدم الرئيسية / Main User Interface
