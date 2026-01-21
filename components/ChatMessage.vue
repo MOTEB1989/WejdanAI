@@ -80,11 +80,11 @@ const formatMessage = (content: string): string => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
   
-  // Bold **text**
-  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  // Bold **text** (process first to avoid conflicts)
+  formatted = formatted.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
   
-  // Italic *text*
-  formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>')
+  // Italic *text* (only match single asterisks not part of bold)
+  formatted = formatted.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>')
   
   // Code `text`
   formatted = formatted.replace(/`(.*?)`/g, '<code class="bg-slate-900/50 px-1 py-0.5 rounded text-sm">$1</code>')

@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 
 interface Message {
   role: 'user' | 'assistant'
