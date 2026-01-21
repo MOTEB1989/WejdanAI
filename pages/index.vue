@@ -11,6 +11,7 @@ const messages = ref([
   },
 ])
 
+const nextId = ref(2)
 const input = ref('')
 const isTyping = ref(false)
 
@@ -27,7 +28,7 @@ const handleSend = async () => {
   input.value = ''
 
   messages.value.push({
-    id: Date.now(),
+    id: nextId.value++,
     role: 'user',
     content: text,
     time: timeNow(),
@@ -38,7 +39,7 @@ const handleSend = async () => {
     // TODO: استبدل هذا بمناداة API الخاصة بـ WejdanAI
     await new Promise((resolve) => setTimeout(resolve, 600))
     messages.value.push({
-      id: Date.now() + 1,
+      id: nextId.value++,
       role: 'assistant',
       content: 'سأعمل على ذلك حالاً وأعود إليك بالتفاصيل.',
       time: timeNow(),
@@ -108,7 +109,7 @@ const handleSend = async () => {
           v-model="input"
           @keyup.enter="handleSend"
           placeholder="اكتب سؤالك هنا..."
-          class="flex-1 border-none bg-transparent py-3 text-[16px] outline-none"
+          class="flex-1 border-none bg-transparent py-3 text-base outline-none"
         />
         <button @click="handleSend" class="p-1 text-blue-600 hover:text-blue-700">
           <Send class="h-6 w-6 -scale-x-100" />
