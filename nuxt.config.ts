@@ -10,4 +10,15 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-02-05',
+
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap',
+        },
+      ],
+    },
+  },
 })
