@@ -2,6 +2,7 @@
 import argparse
 from typing import Any, Dict, List, Optional
 
+import ai_model_manager
 import notion_importer as importer
 
 
@@ -65,6 +66,47 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_archive(args: argparse.Namespace) -> int:
+    try:
+        path = ai_model_manager.add_interaction(
+            model=args.model,
+            title=args.title,
+            content_path_or_text=args.file,
+            url=args.url or "",
+            tags_str=args.tags or "",
+        )
+        if not path:
+            print("↩️ تم تجاوز الأرشفة: موجود مسبقًا (External ID).")
+            return 0
+        print(f"✅ Archived: {path}")
+        return 0
+    except Exception as e:
+        print(f"❌ Archive failed: {e}")
+        return 2
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    db = ai_model_manager.AIDatabase()
+    results = db.search(model=args.model, tag=args.tag, text=args.text, limit=args.limit)
+    if not results:
+        print("ℹ️ لا توجد نتائج.")
+        return 0
+
+    for r in results:
+        print(f"- [{r.model}] {r.title} ({r.date})")
+        print(f"  file: {db.root_dir}/{r.filename}")
+        if r.url:
+            print(f"  url:  {r.url}")
+    return 0
+
+
+def cmd_reindex(_args: argparse.Namespace) -> int:
+    db = ai_model_manager.AIDatabase()
+    n = db.reindex()
+    print(f"✅ Reindexed: {n} records")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Codex CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -79,6 +121,24 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = sub.add_parser("validate", help="Validate JSON")
     validate_parser.add_argument("--file", required=True)
     validate_parser.set_defaults(func=cmd_validate)
+
+    archive_parser = sub.add_parser("archive", help="Save AI interaction to the Github Knowledge Base")
+    archive_parser.add_argument("--model", required=True, choices=ai_model_manager.SUPPORTED_MODELS)
+    archive_parser.add_argument("--title", required=True)
+    archive_parser.add_argument("--file", required=True, help="Path to text file OR raw text")
+    archive_parser.add_argument("--url")
+    archive_parser.add_argument("--tags", help="Comma separated tags (e.g. 'code,python,fix')")
+    archive_parser.set_defaults(func=cmd_archive)
+
+    search_parser = sub.add_parser("search", help="Search the knowledge base index")
+    search_parser.add_argument("--model", choices=ai_model_manager.SUPPORTED_MODELS)
+    search_parser.add_argument("--tag")
+    search_parser.add_argument("--text", help="Free text filter over title/url/tags/filename")
+    search_parser.add_argument("--limit", type=int, default=20)
+    search_parser.set_defaults(func=cmd_search)
+
+    reindex_parser = sub.add_parser("reindex", help="Rebuild db_index.json from markdown files")
+    reindex_parser.set_defaults(func=cmd_reindex)
 
     return parser
 
