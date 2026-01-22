@@ -23,6 +23,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// Constants
+const TYPING_DELAY = 500
+
 const message = ref('')
 const sending = ref(false)
 
@@ -48,6 +51,6 @@ const handleTyping = () => {
   
   typingTimer = setTimeout(() => {
     emit('typing')
-  }, 500)
+  }, TYPING_DELAY)
 }
 </script>

@@ -53,7 +53,7 @@ export function initializeWebSocketServer(server: Server) {
     // Send connection confirmation
     ws.send(JSON.stringify({ 
       type: 'connected',
-      message: 'Connected to chat server'
+      content: 'Connected to chat server'
     }))
   })
 

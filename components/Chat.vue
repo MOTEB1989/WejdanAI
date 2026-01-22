@@ -82,6 +82,11 @@ interface Message {
   message_type?: string
 }
 
+// Constants
+const TYPING_INDICATOR_TIMEOUT = 2000
+const RECONNECTION_TIMEOUT = 3000
+const DEFAULT_USER_IMAGE = 'https://images.ctfassets.net/e5382hct74si/2P1iOve0LZJRZWUzfXpi9r/9d4d27765764fb1ad7379d7cbe5f1043/ucxb4lHy_400x400.jpg'
+
 const messages = ref<Message[]>([])
 const loading = ref(true)
 const connected = ref(false)
@@ -92,7 +97,7 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const currentUser = ref({
   id: 1,
   name: 'You',
-  image: 'https://images.ctfassets.net/e5382hct74si/2P1iOve0LZJRZWUzfXpi9r/9d4d27765764fb1ad7379d7cbe5f1043/ucxb4lHy_400x400.jpg'
+  image: DEFAULT_USER_IMAGE
 })
 
 let ws: WebSocket | null = null
@@ -143,7 +148,7 @@ const connectWebSocket = () => {
       
       typingTimeout = setTimeout(() => {
         someoneTyping.value = false
-      }, 2000)
+      }, TYPING_INDICATOR_TIMEOUT)
     }
   }
   
@@ -151,12 +156,12 @@ const connectWebSocket = () => {
     console.log('WebSocket disconnected')
     connected.value = false
     
-    // Attempt to reconnect after 3 seconds
+    // Attempt to reconnect after timeout
     setTimeout(() => {
       if (!connected.value) {
         connectWebSocket()
       }
-    }, 3000)
+    }, RECONNECTION_TIMEOUT)
   }
   
   ws.onerror = (error) => {
