@@ -46,7 +46,7 @@ export default defineEventHandler(async () => {
     const duration = Date.now() - startTime
     return {
       users,
-      duration: duration,
+      duration,
     }
   } catch (error) {
     if (
@@ -62,7 +62,7 @@ export default defineEventHandler(async () => {
       const duration = Date.now() - startTime
       return {
         users,
-        duration: duration,
+        duration,
       }
     } else {
       throw error
