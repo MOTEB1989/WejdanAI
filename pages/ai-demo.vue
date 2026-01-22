@@ -92,13 +92,37 @@ const sendMessage = async () => {
     })
     
     if (!res.ok) {
-      const errorData = await res.json()
-      throw new Error(errorData.statusMessage || 'Failed to get response')
+      let errorMessage = 'Failed to get response'
+      try {
+        const errorData = await res.json()
+        errorMessage = errorData.statusMessage || errorMessage
+      } catch {
+        // If response isn't JSON, use status text
+        errorMessage = res.statusText || errorMessage
+      }
+      throw new Error(errorMessage)
     }
     
-    // For now, just show that the endpoint is reachable
-    // In a real app, you'd handle streaming responses
-    response.value = 'AI endpoint is configured! (Note: Streaming response handling requires additional client-side setup)'
+    // Handle streaming response
+    const reader = res.body?.getReader()
+    const decoder = new TextDecoder()
+    
+    if (!reader) {
+      throw new Error('Response body is not readable')
+    }
+    
+    response.value = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      
+      const chunk = decoder.decode(value, { stream: true })
+      response.value += chunk
+    }
+    
+    if (!response.value) {
+      response.value = 'AI endpoint is configured but returned no content. Make sure OPENAI_API_KEY is set.'
+    }
   } catch (err) {
     error.value = err.message
   } finally {
