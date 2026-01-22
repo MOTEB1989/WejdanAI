@@ -1,8 +1,12 @@
 import postgres from 'postgres'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+const hasDatabaseUrl = Boolean(process.env.POSTGRES_URL)
+const sql = hasDatabaseUrl
+  ? postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+  : null
 
 async function seed() {
+  if (!sql) throw new Error('POSTGRES_URL is not set')
   const createTable = await sql`
     CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
@@ -41,6 +45,14 @@ async function seed() {
 }
 export default defineEventHandler(async () => {
   const startTime = Date.now()
+  if (!sql) {
+    const duration = Date.now() - startTime
+    console.warn('POSTGRES_URL is not set. Returning sample users.')
+    return {
+      users: [],
+      duration,
+    }
+  }
   try {
     const users = await sql`SELECT * FROM profiles`
     const duration = Date.now() - startTime
@@ -57,6 +69,7 @@ export default defineEventHandler(async () => {
         'Table does not exist, creating and seeding it with dummy data now...'
       )
       // Table is not created yet
+      if (!sql) throw new Error('POSTGRES_URL is not set')
       await seed()
       const users = await sql`SELECT * FROM profiles`
       const duration = Date.now() - startTime
