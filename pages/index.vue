@@ -14,6 +14,15 @@
       Postgres on Vercel
     </h1>
     <Table :users="data?.users" :duration="data?.duration" />
+    
+    <!-- Chat Link -->
+    <NuxtLink
+      to="/chat"
+      class="mt-6 px-8 py-3 text-base font-medium text-white transition-all rounded-full shadow-lg bg-gradient-to-br from-blue-500 to-purple-600 hover:shadow-xl active:shadow-md"
+    >
+      Open Chat 💬
+    </NuxtLink>
+    
     <div
       class="w-full max-w-lg mt-6 font-light text-center text-gray-600 dark:text-gray-300"
     >
