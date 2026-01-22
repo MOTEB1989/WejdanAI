@@ -1,5 +1,4 @@
-import type { WebSocket } from 'ws'
-import { WebSocketServer } from 'ws'
+import { WebSocket, WebSocketServer } from 'ws'
 
 interface Client {
   ws: WebSocket
@@ -111,7 +110,7 @@ function broadcast(message: any, exclude?: Client) {
   const messageStr = JSON.stringify(message)
   
   clients.forEach((client) => {
-    if (client !== exclude && client.ws.readyState === 1) { // 1 = OPEN
+    if (client !== exclude && client.ws.readyState === WebSocket.OPEN) {
       try {
         client.ws.send(messageStr)
       } catch (error) {

@@ -32,7 +32,7 @@ export interface TypingUser {
 
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'user_joined' | 'user_left' | 'presence_update'
-  data: any
+  data: Message | TypingUser | OnlineUser | { userId: number; userName: string; isTyping: boolean } | { message: string }
   timestamp: Date
 }
 

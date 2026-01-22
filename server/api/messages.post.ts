@@ -40,9 +40,10 @@ export default defineEventHandler(async (event) => {
       return result[0]
     } catch (error) {
       // If table doesn't exist, create it and retry
+      // PostgreSQL error code 42P01 = undefined_table
       if (
         error instanceof Error &&
-        error.message.includes('relation "messages" does not exist')
+        (error as any).code === '42P01'
       ) {
         console.log('Messages table does not exist, creating it now...')
         await initMessagesTable()

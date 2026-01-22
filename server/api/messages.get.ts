@@ -52,9 +52,10 @@ export default defineEventHandler(async (event) => {
     console.error('Error fetching messages:', error)
     
     // Return empty array if table doesn't exist yet
+    // PostgreSQL error code 42P01 = undefined_table
     if (
       error instanceof Error &&
-      error.message.includes('relation "messages" does not exist')
+      (error as any).code === '42P01'
     ) {
       return {
         messages: [],
