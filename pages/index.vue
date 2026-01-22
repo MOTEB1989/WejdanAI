@@ -14,10 +14,19 @@
       Postgres on Vercel
     </h1>
     <Table :users="data?.users" :duration="data?.duration" />
+    
+    <!-- Chat Link -->
+    <NuxtLink
+      to="/chat"
+      class="mt-6 px-8 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+    >
+      Go to Chat Room →
+    </NuxtLink>
+    
     <div
       class="w-full max-w-lg mt-6 font-light text-center text-gray-600 dark:text-gray-300"
     >
-      Simple hello world demo of Postgres
+      Simple hello world demo of Postgres with real-time chat
       <div class="flex items-center justify-center my-2">
         <span>Built with</span>
         <a
