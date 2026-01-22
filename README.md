@@ -14,25 +14,59 @@ relatedTemplates:
   - postgres-sveltekit
 ---
 
-# Nuxt 3 Minimal Starter
+# WejdanAI - Nuxt 3 + Postgres + Real-time Chat
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A modern web application built with Nuxt 3, featuring PostgreSQL database integration and real-time chat functionality powered by WebSockets.
 
-## Setup
+## Features
 
-Make sure to install the dependencies:
+- 🗄️ **PostgreSQL Integration**: Seamless database operations with auto-migration
+- 💬 **Real-time Chat**: WebSocket-based chat with typing indicators and message persistence
+- 🎨 **Modern UI**: Glassmorphism design with Tailwind CSS
+- 🌓 **Dark Mode**: Full dark mode support
+- 📱 **Responsive**: Mobile-first responsive design
+- ⚡ **Fast**: Built with Nuxt 3 for optimal performance
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+ 
+- PostgreSQL database (required for full functionality)
+
+### Setup
+
+1. Clone the repository and install dependencies:
 
 ```bash
 pnpm install
 ```
 
+2. Configure environment variables:
+
+Create a `.env` file in the root directory:
+
+```bash
+POSTGRES_URL=postgres://username:password@host:port/database
+```
+
+See `.env.example` for reference.
+
 ## Development Server
 
-Start the development server on `http://localhost:3000`
+Start the development server on `http://localhost:3000`:
 
 ```bash
 pnpm dev
 ```
+
+### Using the Chat Feature
+
+1. Navigate to `/chat` or click "💬 Try Chat Demo" on the homepage
+2. Start sending messages in real-time
+3. Open multiple browser windows to test real-time synchronization
+
+For detailed chat documentation, see [CHAT_DOCUMENTATION.md](./CHAT_DOCUMENTATION.md).
 
 ## Production
 
