@@ -9,12 +9,6 @@ interface Client {
 const clients = new Set<Client>()
 
 export default defineNitroPlugin((nitroApp) => {
-  if (!import.meta.dev) {
-    // Only run WebSocket server in development
-    // For production, you'd use a separate WebSocket service
-    return
-  }
-
   // @ts-ignore - Nitro types don't include this
   nitroApp.hooks.hook('request', (event) => {
     // Handle WebSocket upgrade
