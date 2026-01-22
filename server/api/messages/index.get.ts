@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     if (
       error instanceof Error &&
-      error?.message?.includes('relation "messages" does not exist')
+      error.message.includes('relation "messages" does not exist')
     ) {
       console.log('Messages table does not exist, creating it now...')
       await createMessagesTable()

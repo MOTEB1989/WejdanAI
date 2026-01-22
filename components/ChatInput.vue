@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
 
 interface Props {
   disabled?: boolean
@@ -73,7 +73,7 @@ const emit = defineEmits<Emits>()
 
 const message = ref('')
 const inputRef = ref<HTMLTextAreaElement | null>(null)
-let typingTimeout: NodeJS.Timeout | null = null
+const typingTimeout = ref<NodeJS.Timeout | null>(null)
 
 const typingText = computed(() => {
   const users = props.typingUsers
@@ -105,13 +105,19 @@ const handleInput = () => {
   // Emit typing event with debounce
   emit('typing')
   
-  if (typingTimeout) {
-    clearTimeout(typingTimeout)
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value)
   }
-  typingTimeout = setTimeout(() => {
+  typingTimeout.value = setTimeout(() => {
     // Stop typing indicator after 3 seconds of no input
   }, 3000)
 }
+
+onUnmounted(() => {
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value)
+  }
+})
 
 const adjustTextareaHeight = () => {
   nextTick(() => {

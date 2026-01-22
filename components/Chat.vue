@@ -146,10 +146,13 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const showScrollButton = ref(false)
 const autoScroll = ref(true)
 
-// Simulated connection for now (WebSocket would go here)
+// Initialize chat: load message history and set connection status
+// Note: Real-time WebSocket functionality can be added using the useWebSocket composable
+// For now, messages are loaded from API and connection status is simulated
 onMounted(async () => {
   await loadMessages()
-  // Simulate connection
+  // Set connected status after initial load
+  // TODO: Replace with actual WebSocket connection when implementing real-time features
   setTimeout(() => {
     isConnected.value = true
   }, 500)

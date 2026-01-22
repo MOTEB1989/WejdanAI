@@ -1,9 +1,15 @@
 import { ref, onUnmounted } from 'vue'
 
+interface WebSocketMessage {
+  type: string
+  data: any
+  timestamp?: number
+}
+
 export const useWebSocket = (url: string) => {
   const ws = ref<WebSocket | null>(null)
   const isConnected = ref(false)
-  const messages = ref<any[]>([])
+  const messages = ref<WebSocketMessage[]>([])
   const error = ref<string | null>(null)
 
   const connect = () => {
@@ -46,7 +52,7 @@ export const useWebSocket = (url: string) => {
     }
   }
 
-  const send = (data: any) => {
+  const send = (data: WebSocketMessage) => {
     if (ws.value && ws.value.readyState === WebSocket.OPEN) {
       ws.value.send(JSON.stringify(data))
     } else {
