@@ -14,7 +14,7 @@ export default defineEventHandler((event) => {
       wss = new WebSocketServer({ noServer: true })
       
       wss.on('connection', (ws: WebSocket) => {
-        const clientId = Math.random().toString(36).substr(2, 9)
+        const clientId = Math.random().toString(36).substring(2, 11)
         
         clients.set(clientId, { ws, userName: 'Anonymous' })
         console.log(`Client ${clientId} connected. Total clients: ${clients.size}`)

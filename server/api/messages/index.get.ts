@@ -35,9 +35,13 @@ export default defineEventHandler(async (event) => {
       OFFSET ${offset}
     `
     
+    const [{ count }] = await sql`
+      SELECT COUNT(*) as count FROM messages
+    `
+    
     return {
       messages: messages.reverse(), // Return oldest first for chat display
-      total: messages.length
+      total: parseInt(count)
     }
   } catch (error) {
     if (
