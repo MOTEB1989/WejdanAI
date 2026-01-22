@@ -1,4 +1,4 @@
-import { Server as WebSocketServer } from 'ws'
+import { WebSocketServer } from 'ws'
 import type { Server } from 'http'
 
 export default defineNitroPlugin((nitroApp) => {
