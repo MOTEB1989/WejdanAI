@@ -10,3 +10,4 @@ dist
 .vercel
 .turbo
 *.tsbuildinfo
+package-lock.json
