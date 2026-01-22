@@ -26,6 +26,19 @@ Make sure to install the dependencies:
 pnpm install
 ```
 
+## Environment Variables
+
+Create a `.env` file in the root directory and add your Postgres database URL:
+
+```bash
+POSTGRES_URL=your_postgres_connection_string_here
+```
+
+You can use the `.env.example` file as a template. If you don't have a Postgres database, you can get one from:
+- [Vercel Postgres](https://vercel.com/storage/postgres)
+- [Neon](https://neon.tech/)
+- [Supabase](https://supabase.com/)
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`
@@ -33,6 +46,11 @@ Start the development server on `http://localhost:3000`
 ```bash
 pnpm dev
 ```
+
+## Features
+
+- **Database Demo**: View a simple Postgres database demo with user profiles
+- **Web Chat**: Interactive chat interface at `/chat`
 
 ## Production
 

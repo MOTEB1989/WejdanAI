@@ -45,11 +45,13 @@ export default {
   props: {
     users: {
       type: Array,
-      required: true,
+      required: false,
+      default: () => [],
     },
     duration: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
     },
   },
   methods: {
