@@ -9,8 +9,9 @@ interface Client {
 const clients = new Set<Client>()
 
 export default defineNitroPlugin((nitroApp) => {
-  // @ts-ignore - Nitro types don't include this
-  nitroApp.hooks.hook('request', (event) => {
+  // Type-safe hook registration for WebSocket upgrade handling
+  const hooks = nitroApp.hooks as any
+  hooks.hook('request', (event: any) => {
     // Handle WebSocket upgrade
     if (event.node.req.headers.upgrade === 'websocket') {
       handleWebSocketUpgrade(event)
@@ -19,7 +20,7 @@ export default defineNitroPlugin((nitroApp) => {
 })
 
 function handleWebSocketUpgrade(event: any) {
-  const { req, res } = event.node
+  const { req } = event.node
 
   // Create WebSocket server for this connection
   const wss = new WebSocketServer({ noServer: true })
@@ -76,10 +77,16 @@ function handleWebSocketUpgrade(event: any) {
     })
   })
 
-  // Perform the upgrade
-  wss.handleUpgrade(req, req.socket, Buffer.alloc(0), (ws) => {
-    wss.emit('connection', ws, req)
-  })
+  // Perform the upgrade with proper head buffer handling
+  const head = Buffer.alloc(0) // Empty buffer for initial upgrade
+  try {
+    wss.handleUpgrade(req, req.socket, head, (ws) => {
+      wss.emit('connection', ws, req)
+    })
+  } catch (error) {
+    console.error('WebSocket upgrade failed:', error)
+    req.socket.destroy()
+  }
 }
 
 function broadcastUsersCount() {

@@ -220,10 +220,11 @@ const connectWebSocket = () => {
 
 // Send message
 const handleSendMessage = async (content: string) => {
+  const tempId = Date.now() // Store temp ID
   try {
     // Optimistically add message to UI
     const tempMessage: Message = {
-      id: Date.now(), // Temporary ID
+      id: tempId, // Temporary ID
       user_id: props.currentUser.id,
       user_name: props.currentUser.name,
       user_image: props.currentUser.image,
@@ -248,7 +249,7 @@ const handleSendMessage = async (content: string) => {
     })
 
     // Replace temp message with saved message
-    const index = messages.value.findIndex((m) => m.id === tempMessage.id)
+    const index = messages.value.findIndex((m) => m.id === tempId)
     if (index !== -1) {
       messages.value[index] = savedMessage
     }
@@ -264,8 +265,8 @@ const handleSendMessage = async (content: string) => {
     }
   } catch (error) {
     console.error('Failed to send message:', error)
-    // Remove optimistic message on error
-    messages.value = messages.value.filter((m) => m.id !== Date.now())
+    // Remove optimistic message on error using stored temp ID
+    messages.value = messages.value.filter((m) => m.id !== tempId)
   }
 }
 
