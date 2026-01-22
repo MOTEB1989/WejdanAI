@@ -61,17 +61,18 @@ const props = defineProps<{
   currentUserId?: number
 }>()
 
-const defaultAvatar = 'https://ui-avatars.com/api/?background=random&name='
+const defaultAvatar = computed(() => 
+  `https://ui-avatars.com/api/?background=random&name=${encodeURIComponent(props.message.sender_name)}`
+)
 
 const isOwnMessage = computed(() => {
-  return props.message.sender_name === props.currentUserId?.toString() || 
-         props.message.user_id === props.currentUserId
+  return props.message.user_id === props.currentUserId
 })
 
 const formatTime = (timestamp: string) => {
   if (!timestamp) return ''
   const diff = Date.now() - new Date(timestamp).getTime()
-  return ms(diff, { long: false })
+  return ms(Math.abs(diff), { long: false })
 }
 </script>
 

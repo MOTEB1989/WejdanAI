@@ -1,10 +1,11 @@
 import { WebSocketServer } from 'ws'
 import type { Server } from 'http'
+import type WebSocket from 'ws'
 
 export default defineNitroPlugin((nitroApp) => {
   // WebSocket server will be initialized when the HTTP server is ready
   let wss: WebSocketServer | null = null
-  const clients = new Set()
+  const clients = new Set<WebSocket>()
 
   nitroApp.hooks.hook('request', (event) => {
     if (!wss && event.node.res.socket?.server) {
@@ -35,8 +36,8 @@ export default defineNitroPlugin((nitroApp) => {
               console.log('Received message:', message)
 
               // Broadcast to all connected clients
-              clients.forEach((client: any) => {
-                if (client.readyState === 1) { // OPEN state
+              clients.forEach((client) => {
+                if (client.readyState === client.OPEN) {
                   client.send(JSON.stringify(message))
                 }
               })
