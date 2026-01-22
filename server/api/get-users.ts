@@ -6,6 +6,7 @@ const sql = hasDatabaseUrl
   : null
 
 async function seed() {
+  if (!sql) throw new Error('POSTGRES_URL is not set')
   const createTable = await sql`
     CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
@@ -68,6 +69,7 @@ export default defineEventHandler(async () => {
         'Table does not exist, creating and seeding it with dummy data now...'
       )
       // Table is not created yet
+      if (!sql) throw new Error('POSTGRES_URL is not set')
       await seed()
       const users = await sql`SELECT * FROM profiles`
       const duration = Date.now() - startTime
