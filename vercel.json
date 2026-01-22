@@ -1,4 +1,11 @@
 {
   "buildCommand": "pnpm turbo build",
-  "ignoreCommand": "pnpm dlx turbo-ignore"
+  "ignoreCommand": "pnpm dlx turbo-ignore",
+  "framework": "nuxtjs",
+  "installCommand": "pnpm install",
+  "devCommand": "pnpm dev",
+  "outputDirectory": ".output/public",
+  "env": {
+    "NUXT_TELEMETRY_DISABLED": "1"
+  }
 }
