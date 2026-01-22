@@ -96,7 +96,7 @@
     <!-- Chat input -->
     <ChatInput
       :typing-users="typingUsers"
-      :disabled="!isConnected"
+      :disabled="false"
       @send="handleSendMessage"
       @typing="handleTyping"
     />
@@ -141,9 +141,9 @@ const {
 const currentUserId = computed(() => props.currentUser.id)
 
 const connectionStatus = computed(() => {
-  if (isConnected.value) return 'Connected'
-  if (connectionError.value) return connectionError.value
-  return 'Disconnected'
+  if (isConnected.value) return 'WebSocket Connected'
+  if (connectionError.value) return 'HTTP Mode (Real-time disabled)'
+  return 'Connecting...'
 })
 
 // Load messages from API

@@ -51,7 +51,7 @@ export const useWebSocket = () => {
 
       ws.value.onerror = (error) => {
         console.error('WebSocket error:', error)
-        connectionError.value = 'Connection error occurred'
+        connectionError.value = 'WebSocket not available - using HTTP fallback'
       }
 
       ws.value.onclose = () => {
@@ -59,8 +59,10 @@ export const useWebSocket = () => {
         isConnected.value = false
         stopHeartbeat()
         
-        // Attempt to reconnect
-        if (reconnectAttempts.value < maxReconnectAttempts) {
+        // Don't attempt to reconnect if WebSocket is not supported
+        if (reconnectAttempts.value === 0) {
+          connectionError.value = 'WebSocket not available - using HTTP fallback'
+        } else if (reconnectAttempts.value < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.value), 10000)
           reconnectTimeout = setTimeout(() => {
             reconnectAttempts.value++
@@ -68,12 +70,13 @@ export const useWebSocket = () => {
             connect(userId, userName)
           }, delay)
         } else {
-          connectionError.value = 'Failed to reconnect after multiple attempts'
+          connectionError.value = 'WebSocket not available - using HTTP fallback'
         }
       }
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error)
-      connectionError.value = 'Failed to establish connection'
+      connectionError.value = 'WebSocket not available - using HTTP fallback'
+      isConnected.value = false
     }
   }
 

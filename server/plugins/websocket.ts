@@ -1,10 +1,12 @@
-import { Server as WebSocketServer } from 'ws'
+import WebSocket from 'ws'
 import type { WebSocketMessage } from '../../types/chat'
 
+const WebSocketServer = WebSocket.Server || WebSocket.WebSocketServer
+
 export default defineNitroPlugin((nitroApp) => {
-  if (process.env.NODE_ENV === 'production' && !process.env.ENABLE_WEBSOCKET) {
-    // Skip WebSocket in production on Vercel (serverless)
-    console.log('WebSocket disabled in serverless environment')
+  // Skip WebSocket server in production on Vercel (serverless) or in dev mode
+  if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
+    console.log('WebSocket server disabled - using fallback to HTTP API')
     return
   }
 
