@@ -13,6 +13,15 @@
     >
       Postgres on Vercel
     </h1>
+    
+    <!-- Chat link -->
+    <a
+      href="/chat"
+      class="mb-6 px-6 py-3 text-sm font-medium text-white bg-blue-500 transition-all rounded-full shadow-md hover:bg-blue-600 hover:shadow-lg active:shadow-sm"
+    >
+      💬 Open Chat Room
+    </a>
+    
     <Table :users="data?.users" :duration="data?.duration" />
     <div
       class="w-full max-w-lg mt-6 font-light text-center text-gray-600 dark:text-gray-300"
