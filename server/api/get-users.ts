@@ -1,6 +1,9 @@
 import postgres from 'postgres'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+const hasDatabaseUrl = Boolean(process.env.POSTGRES_URL)
+const sql = hasDatabaseUrl
+  ? postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+  : null
 
 async function seed() {
   const createTable = await sql`
@@ -41,6 +44,14 @@ async function seed() {
 }
 export default defineEventHandler(async () => {
   const startTime = Date.now()
+  if (!sql) {
+    const duration = Date.now() - startTime
+    console.warn('POSTGRES_URL is not set. Returning sample users.')
+    return {
+      users: [],
+      duration,
+    }
+  }
   try {
     const users = await sql`SELECT * FROM profiles`
     const duration = Date.now() - startTime
