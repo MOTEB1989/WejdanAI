@@ -5,7 +5,7 @@
 #
 # To configure this workflow:
 #
-# 1. Set up a secret in your repository named AZURE_STATIC_WEB_APPS_API_TOKEN_BENN (or AZURE_STATIC_WEB_APPS_API_TOKEN) with the value of your Static Web Apps deployment token.
+# 1. Set up a secret in your repository named AZURE_STATIC_WEB_APPS_API_TOKEN_BENN with the value of your Static Web Apps deployment token.
 #    For instructions on obtaining the deployment token see: https://docs.microsoft.com/azure/static-web-apps/deployment-token-management
 #
 # 3. Change the values for the APP_LOCATION, API_LOCATION and APP_ARTIFACT_LOCATION, AZURE_STATIC_WEB_APPS_API_TOKEN environment variables (below).
@@ -24,7 +24,7 @@ env:
   APP_LOCATION: "/" # location of your client code
   API_LOCATION: "api" # location of your api source code - optional
   APP_ARTIFACT_LOCATION: "build" # location of client code build output
-  AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BENN || secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }} # secret containing deployment token for your static web app
+  AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BENN }} # secret containing deployment token for your static web app
 
 permissions:
   contents: read
