@@ -1,0 +1,24 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dependency update script
+        run: |
+          chmod +x ./scripts/update-deps.sh
+          ./scripts/update-deps.sh
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update dependencies"
+          branch: "deps/update-$(date +%Y%m%d)"
+          title: "Dependency updates"
+          body: "تحديث اعتمادات المشروع تلقائياً بواسطة RepoCaretaker"

@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Swift packages
+        run: swift package resolve
+      - name: Build
+        run: swift build
+      - name: Run tests
+        run: swift test
+      - name: Run SwiftLint
+        uses: norio-nomura/action-swiftlint@v3

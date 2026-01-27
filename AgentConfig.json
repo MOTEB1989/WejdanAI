@@ -1,0 +1,13 @@
+{
+  "agentName": "RepoCaretaker",
+  "version": "1.0",
+  "modes": ["init", "daily", "weekly", "monthly"],
+  "autoPR": true,
+  "maxPRChanges": 500,
+  "languages": ["swift"],
+  "securityScan": true,
+  "dependencyUpdate": {
+    "enabled": true,
+    "strategy": "minor-patch"
+  }
+}
