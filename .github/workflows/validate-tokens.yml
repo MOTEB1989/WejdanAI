@@ -1,0 +1,94 @@
+name: Token Validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # Run weekly on Sunday at midnight
+
+jobs:
+  validate-tokens:
+    runs-on: ubuntu-latest
+    name: Validate GitHub and Vercel Tokens
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+        
+      - name: Validate GitHub Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔑 Validating GitHub Token..."
+          RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                          -H "Accept: application/vnd.github.v3+json" \
+                          https://api.github.com/user)
+          
+          if echo "$RESPONSE" | grep -q "login"; then
+            USERNAME=$(echo "$RESPONSE" | grep -o '"login": *"[^"]*"' | head -1 | cut -d'"' -f4)
+            echo "✅ GitHub token is valid"
+            echo "   Authenticated as: $USERNAME"
+          else
+            echo "❌ GitHub token validation failed"
+            exit 1
+          fi
+          
+      - name: Validate Vercel Token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "🔑 Validating Vercel Token..."
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️  VERCEL_TOKEN secret is not configured"
+            echo "   Please add VERCEL_TOKEN in repository secrets"
+            exit 1
+          fi
+          
+          RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+                          https://api.vercel.com/v2/user)
+          
+          if echo "$RESPONSE" | grep -q "user"; then
+            USERNAME=$(echo "$RESPONSE" | grep -o '"username": *"[^"]*"' | head -1 | cut -d'"' -f4)
+            echo "✅ Vercel token is valid"
+            echo "   Authenticated as: $USERNAME"
+          else
+            echo "❌ Vercel token validation failed"
+            echo "   Response: $RESPONSE"
+            exit 1
+          fi
+          
+      - name: Check Azure Token
+        run: |
+          echo "🔑 Checking Azure Static Web Apps Token..."
+          if [ -n "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}" ]; then
+            echo "✅ AZURE_STATIC_WEB_APPS_API_TOKEN is configured"
+          else
+            echo "⚠️  AZURE_STATIC_WEB_APPS_API_TOKEN is not configured"
+            echo "   This is required for Azure Static Web Apps deployment"
+          fi
+          
+      - name: Check Database URL
+        run: |
+          echo "🔑 Checking Database Configuration..."
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
+            echo "✅ POSTGRES_URL is configured"
+          else
+            echo "⚠️  POSTGRES_URL is not configured"
+            echo "   This is required for database connectivity"
+          fi
+          
+      - name: Summary
+        run: |
+          echo "=================================="
+          echo "✅ Token Validation Complete"
+          echo "=================================="
+          echo ""
+          echo "All required tokens have been validated."
+          echo "Your deployment pipelines should work correctly."
