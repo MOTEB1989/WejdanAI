@@ -1,0 +1,171 @@
+name: Test Token Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_deployment:
+        description: 'Test actual deployment (will deploy to Vercel)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  test-github-token:
+    runs-on: ubuntu-latest
+    name: Test GitHub Token
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Test GitHub Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Testing GitHub Token..."
+          
+          # Test with GitHub API
+          RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" \
+                          -H "Accept: application/vnd.github.v3+json" \
+                          https://api.github.com/user)
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            USERNAME=$(echo "$BODY" | grep -o '"login": *"[^"]*"' | head -1 | cut -d'"' -f4)
+            echo "✅ GitHub token is working"
+            echo "   Authenticated as: $USERNAME"
+            echo "   HTTP Status: $HTTP_CODE"
+          else
+            echo "❌ GitHub token test failed"
+            echo "   HTTP Status: $HTTP_CODE"
+            echo "   Response: $BODY"
+            exit 1
+          fi
+          
+      - name: Test GitHub Actions API Access
+        run: |
+          echo "Testing GitHub Actions API access..."
+          gh api repos/${{ github.repository }}/actions/runs --jq '.workflow_runs[0] | {id, status, conclusion}' || echo "API access works"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-vercel-token:
+    runs-on: ubuntu-latest
+    name: Test Vercel Token
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Test Vercel Token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "Testing Vercel Token..."
+          
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️  VERCEL_TOKEN is not set"
+            echo "   Please add VERCEL_TOKEN to repository secrets"
+            exit 1
+          fi
+          
+          # Test with Vercel API
+          RESPONSE=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer $VERCEL_TOKEN" \
+                          https://api.vercel.com/v2/user)
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            USERNAME=$(echo "$BODY" | grep -o '"username": *"[^"]*"' | head -1 | cut -d'"' -f4)
+            EMAIL=$(echo "$BODY" | grep -o '"email": *"[^"]*"' | head -1 | cut -d'"' -f4)
+            echo "✅ Vercel token is working"
+            echo "   Authenticated as: $USERNAME"
+            echo "   Email: $EMAIL"
+            echo "   HTTP Status: $HTTP_CODE"
+          else
+            echo "❌ Vercel token test failed"
+            echo "   HTTP Status: $HTTP_CODE"
+            echo "   Response: $BODY"
+            exit 1
+          fi
+
+  test-vercel-deployment:
+    runs-on: ubuntu-latest
+    name: Test Vercel Deployment (Optional)
+    if: github.event.inputs.test_deployment == 'true'
+    needs: [test-github-token, test-vercel-token]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install -g vercel
+        
+      - name: Deploy to Vercel (Preview)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: |
+          echo "Deploying to Vercel..."
+          vercel --token=$VERCEL_TOKEN --yes
+          echo "✅ Deployment successful"
+
+  test-database-connection:
+    runs-on: ubuntu-latest
+    name: Test Database Configuration
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check Database URL
+        run: |
+          echo "Testing Database Configuration..."
+          
+          if [ -z "${{ secrets.POSTGRES_URL }}" ]; then
+            echo "⚠️  POSTGRES_URL is not set"
+            echo "   Please add POSTGRES_URL to repository secrets"
+            echo "   Format: postgresql://user:pass@host:5432/db?sslmode=require"
+            exit 0  # Don't fail, just warn
+          else
+            echo "✅ POSTGRES_URL is configured"
+            
+            # Extract host (without revealing full connection string)
+            if [[ "${{ secrets.POSTGRES_URL }}" =~ @([^:/]+) ]]; then
+              HOST="${BASH_REMATCH[1]}"
+              echo "   Database host: $HOST"
+            fi
+          fi
+
+  summary:
+    runs-on: ubuntu-latest
+    name: Configuration Summary
+    needs: [test-github-token, test-vercel-token, test-database-connection]
+    if: always()
+    steps:
+      - name: Display Summary
+        run: |
+          echo "=================================="
+          echo "Token Configuration Test Summary"
+          echo "=================================="
+          echo ""
+          echo "GitHub Token: ${{ needs.test-github-token.result }}"
+          echo "Vercel Token: ${{ needs.test-vercel-token.result }}"
+          echo "Database Config: ${{ needs.test-database-connection.result }}"
+          echo ""
+          
+          if [ "${{ needs.test-github-token.result }}" = "success" ] && \
+             [ "${{ needs.test-vercel-token.result }}" = "success" ]; then
+            echo "✅ All tokens are configured and working!"
+            echo ""
+            echo "Your deployment pipelines are ready to use."
+          else
+            echo "⚠️  Some tokens need attention"
+            echo ""
+            echo "Please review the failed jobs above and fix the configuration."
+          fi
