@@ -49,3 +49,34 @@ pnpm preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Token Configuration
+
+This project requires GitHub and Vercel tokens for deployment and CI/CD workflows.
+
+### Quick Setup
+
+1. **Copy environment variables template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure tokens:**
+   - See [Token Setup Guide](docs/TOKEN_SETUP.md) for detailed instructions
+
+3. **Validate configuration:**
+   ```bash
+   chmod +x scripts/validate-tokens.sh
+   ./scripts/validate-tokens.sh
+   ```
+
+### Required Secrets
+
+For GitHub Actions workflows, configure these secrets in repository settings:
+
+- `GITHUB_TOKEN` - Automatically provided by GitHub Actions
+- `VERCEL_TOKEN` - Get from https://vercel.com/account/tokens
+- `AZURE_STATIC_WEB_APPS_API_TOKEN` - Get from Azure Portal
+- `POSTGRES_URL` - Your PostgreSQL connection string
+
+See [docs/TOKEN_SETUP.md](docs/TOKEN_SETUP.md) for complete setup instructions.
