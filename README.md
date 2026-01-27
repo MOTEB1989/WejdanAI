@@ -1,51 +1,16 @@
----
-name: Postgres + Nuxt Starter
-slug: postgres-nuxt
-description: Simple Nuxt template that uses a Postgres database.
-framework: Nuxt
-useCase: Starter
-css: Tailwind
-database: Postgres
-deployUrl: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FWejdan-AI%2FLexNexus&project-name=lexnexus&repository-name=LexNexus&demo-title=LexNexus&demo-description=LexNexus%20platform
-demoUrl: https://postgres-nuxt.vercel.app/
-relatedTemplates:
-  - postgres-starter
-  - postgres-prisma
-  - postgres-sveltekit
----
+# OpenChatAgent
 
-# Nuxt 3 Minimal Starter
+Open source iOS chat app built with SwiftUI and Agent for repository caretaking.
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+## تشغيل محلي
+1. افتح المشروع في Xcode 14+.
+2. ضع مفتاح OpenAI API في مكان آمن مثل Keychain أو استخدم متغير بيئة أثناء التطوير.
+3. شغّل التطبيق على المحاكي أو جهاز فعلي.
 
-## Setup
+## إعداد GitHub
+- أضف Secrets: `OPENAI_API_KEY`.
+- فعّل GitHub Actions.
 
-Make sure to install the dependencies:
-
-```bash
-pnpm install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`
-
-```bash
-pnpm dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-pnpm build
-```
-
-Locally preview production build:
-
-```bash
-pnpm preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## ملاحظات أمان
+- لا ترفع مفاتيح API إلى المستودع.
+- فعّل Secret Scanning وDependabot.

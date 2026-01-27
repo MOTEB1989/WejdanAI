@@ -10,3 +10,13 @@ dist
 .vercel
 .turbo
 *.tsbuildinfo
+# Xcode
+.DS_Store
+*.xcuserstate
+*.xcuserdata
+*.xcodeproj/project.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+DerivedData/
+
+# Swift Package Manager
+.build/
