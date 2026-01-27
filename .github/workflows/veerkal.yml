@@ -1,0 +1,29 @@
+name: VeerKal RepoCaretaker
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"   # Every Monday at 07:00 UTC
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task for VeerKal agent'
+        required: false
+        default: 'Review repo and propose weekly maintenance tasks (deps, CI, security).'
+
+jobs:
+  caretaker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run VeerKal Agent
+        run: |
+          node scripts/veerkal-agent.mjs "${{ github.event.inputs.task || 'Review repo and propose weekly maintenance tasks (deps, CI, security).' }}"
+        env:
+          AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
