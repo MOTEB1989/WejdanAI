@@ -6,7 +6,7 @@ framework: Nuxt
 useCase: Starter
 css: Tailwind
 database: Postgres
-deployUrl: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FWejdan-AI%2FLexNexus&project-name=lexnexus&repository-name=LexNexus&demo-title=LexNexus&demo-description=LexNexus%20platform
+deployUrl: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMOTEB1989%2FWejdanAI&project-name=wejdanai&repository-name=WejdanAI&demo-title=WejdanAI&demo-description=WejdanAI%20platform
 demoUrl: https://postgres-nuxt.vercel.app/
 relatedTemplates:
   - postgres-starter
@@ -49,3 +49,17 @@ pnpm preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Deployment
+
+This project is configured for deployment to **Vercel** and **Azure Static Web Apps**.
+
+### Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMOTEB1989%2FWejdanAI&project-name=wejdanai&repository-name=WejdanAI)
+
+### Automated Deployment
+
+Deployments are automatically triggered via GitHub Actions when you push to the `main` branch.
+
+For detailed deployment instructions and setup, see [DEPLOYMENT.md](./DEPLOYMENT.md).

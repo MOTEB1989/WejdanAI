@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - copilot/fix-merge-and-deploy
   pull_request:
     branches:
       - main
@@ -34,7 +33,7 @@ jobs:
         run: pnpm install
 
       - name: Build project
-        run: pnpm run build
+        run: pnpm turbo build
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
