@@ -67,8 +67,8 @@ if [ -f ".env.example" ]; then
         # Read POSTGRES_URL
         read -p "Enter POSTGRES_URL (or press Enter to skip): " POSTGRES_URL
         if [ -n "$POSTGRES_URL" ]; then
-            vercel env add POSTGRES_URL production
-            echo "$POSTGRES_URL"
+            echo "$POSTGRES_URL" | vercel env add POSTGRES_URL production
+            echo "✅ POSTGRES_URL added to Vercel"
         fi
         
         echo ""

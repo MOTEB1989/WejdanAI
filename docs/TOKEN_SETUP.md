@@ -18,8 +18,8 @@ This guide explains how to configure GitHub and Vercel tokens for the WejdanAI p
 # Check if authenticated
 gh auth status
 
-# Or test with API
-curl -H "Authorization: token YOUR_TOKEN" https://api.github.com/user
+# Or test with API (using Bearer token for PAT)
+curl -H "Authorization: Bearer YOUR_TOKEN" https://api.github.com/user
 ```
 
 ---

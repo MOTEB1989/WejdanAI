@@ -20,6 +20,57 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to validate GitHub token
+validate_github_token() {
+    local token="$1"
+    
+    if ! command_exists curl; then
+        echo -e "${YELLOW}⚠${NC} curl not available, skipping API validation"
+        return 0
+    fi
+    
+    local response=$(curl -s -H "Authorization: Bearer $token" \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    https://api.github.com/user)
+    
+    if echo "$response" | grep -q "login"; then
+        local username=$(echo "$response" | grep -o '"login": *"[^"]*"' | head -1 | cut -d'"' -f4)
+        echo -e "${GREEN}✓${NC} GitHub token is valid"
+        echo "  Authenticated as: $username"
+        return 0
+    else
+        echo -e "${RED}✗${NC} GitHub token is invalid or expired"
+        echo "  Response: $response"
+        ALL_VALID=false
+        return 1
+    fi
+}
+
+# Function to validate Vercel token
+validate_vercel_token() {
+    local token="$1"
+    
+    if ! command_exists curl; then
+        echo -e "${YELLOW}⚠${NC} curl not available, skipping API validation"
+        return 0
+    fi
+    
+    local response=$(curl -s -H "Authorization: Bearer $token" \
+                    https://api.vercel.com/v2/user)
+    
+    if echo "$response" | grep -q "user"; then
+        local username=$(echo "$response" | grep -o '"username": *"[^"]*"' | head -1 | cut -d'"' -f4)
+        echo -e "${GREEN}✓${NC} Vercel token is valid"
+        echo "  Authenticated as: $username"
+        return 0
+    else
+        echo -e "${RED}✗${NC} Vercel token is invalid or expired"
+        echo "  Response: $response"
+        ALL_VALID=false
+        return 1
+    fi
+}
+
 echo "📋 Checking Prerequisites..."
 echo ""
 
@@ -52,23 +103,7 @@ echo ""
 # Check GitHub token
 if [ -n "$GITHUB_TOKEN" ]; then
     echo -e "${GREEN}✓${NC} GITHUB_TOKEN environment variable is set"
-    
-    # Test GitHub token by making an API call
-    if command_exists curl; then
-        RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-                        -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/user)
-        
-        if echo "$RESPONSE" | grep -q "login"; then
-            USERNAME=$(echo "$RESPONSE" | grep -o '"login": *"[^"]*"' | head -1 | cut -d'"' -f4)
-            echo -e "${GREEN}✓${NC} GitHub token is valid"
-            echo "  Authenticated as: $USERNAME"
-        else
-            echo -e "${RED}✗${NC} GitHub token is invalid or expired"
-            echo "  Response: $RESPONSE"
-            ALL_VALID=false
-        fi
-    fi
+    validate_github_token "$GITHUB_TOKEN"
 elif command_exists gh; then
     # Try using gh CLI auth status
     if gh auth status >/dev/null 2>&1; then
@@ -94,22 +129,7 @@ echo ""
 # Check Vercel token
 if [ -n "$VERCEL_TOKEN" ]; then
     echo -e "${GREEN}✓${NC} VERCEL_TOKEN environment variable is set"
-    
-    # Test Vercel token by making an API call
-    if command_exists curl; then
-        RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
-                        https://api.vercel.com/v2/user)
-        
-        if echo "$RESPONSE" | grep -q "user"; then
-            USERNAME=$(echo "$RESPONSE" | grep -o '"username": *"[^"]*"' | head -1 | cut -d'"' -f4)
-            echo -e "${GREEN}✓${NC} Vercel token is valid"
-            echo "  Authenticated as: $USERNAME"
-        else
-            echo -e "${RED}✗${NC} Vercel token is invalid or expired"
-            echo "  Response: $RESPONSE"
-            ALL_VALID=false
-        fi
-    fi
+    validate_vercel_token "$VERCEL_TOKEN"
 elif command_exists vercel; then
     # Try using vercel whoami
     if vercel whoami >/dev/null 2>&1; then

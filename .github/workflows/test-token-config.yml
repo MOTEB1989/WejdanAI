@@ -134,12 +134,6 @@ jobs:
             exit 0  # Don't fail, just warn
           else
             echo "✅ POSTGRES_URL is configured"
-            
-            # Extract host (without revealing full connection string)
-            if [[ "${{ secrets.POSTGRES_URL }}" =~ @([^:/]+) ]]; then
-              HOST="${BASH_REMATCH[1]}"
-              echo "   Database host: $HOST"
-            fi
           fi
 
   summary:
