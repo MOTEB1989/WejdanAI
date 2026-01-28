@@ -1,8 +1,21 @@
 import postgres from 'postgres'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+let sqlClient: ReturnType<typeof postgres> | null = null
 
-async function seed() {
+const getSqlClient = () => {
+  if (sqlClient) return sqlClient
+  const { postgresUrl } = useRuntimeConfig()
+  if (!postgresUrl) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'POSTGRES_URL is not set in the runtime config.',
+    })
+  }
+  sqlClient = postgres(postgresUrl, { ssl: 'require' })
+  return sqlClient
+}
+
+async function seed(sql: ReturnType<typeof postgres>) {
   const createTable = await sql`
     CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
@@ -41,6 +54,7 @@ async function seed() {
 }
 export default defineEventHandler(async () => {
   const startTime = Date.now()
+  const sql = getSqlClient()
   try {
     const users = await sql`SELECT * FROM profiles`
     const duration = Date.now() - startTime
@@ -57,7 +71,7 @@ export default defineEventHandler(async () => {
         'Table does not exist, creating and seeding it with dummy data now...'
       )
       // Table is not created yet
-      await seed()
+      await seed(sql)
       const users = await sql`SELECT * FROM profiles`
       const duration = Date.now() - startTime
       return {
