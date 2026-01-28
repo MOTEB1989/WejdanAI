@@ -20,11 +20,35 @@ Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introdu
 
 ## Setup
 
+### 1. Install Dependencies
+
 Make sure to install the dependencies:
 
 ```bash
 pnpm install
 ```
+
+### 2. Configure Environment Variables
+
+Copy the example environment file and configure your API keys:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file and add your API keys:
+
+- **POSTGRES_URL**: PostgreSQL connection URL (required for database operations)
+  - Format: `postgres://username:password@host:port/database?sslmode=require`
+  - Get this from your PostgreSQL provider (e.g., Vercel Postgres, Supabase, etc.)
+
+- **OPENAI_API_KEY**: OpenAI API key (required for AI features)
+  - Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+
+- **AZURE_STATIC_WEB_APPS_API_TOKEN**: Azure deployment token (required for Azure deployment)
+  - Get this from Azure Portal: Static Web Apps > Management > Deployment token
+
+**Important**: Never commit your `.env` file to version control. It's already listed in `.gitignore`.
 
 ## Development Server
 
