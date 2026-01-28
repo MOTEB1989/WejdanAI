@@ -4,6 +4,8 @@
   >
     <a
       href="https://vercel.com"
+      target="_blank"
+      rel="noreferrer"
       class="px-6 py-2 text-sm font-medium text-gray-600 transition-all rounded-full shadow-sm bg-white/30 dark:bg-white/80 ring-1 ring-gray-900/5 dark:text-black hover:shadow-lg active:shadow-sm"
     >
       Deploy your own to Vercel
@@ -13,7 +15,7 @@
     >
       Postgres on Vercel
     </h1>
-    <Table :users="data?.users" :duration="data?.duration" />
+    <Table :users="data?.users ?? []" :duration="data?.duration ?? 0" />
     <div
       class="w-full max-w-lg mt-6 font-light text-center text-gray-600 dark:text-gray-300"
     >
@@ -22,6 +24,8 @@
         <span>Built with</span>
         <a
           href="https://nuxt.com/docs"
+          target="_blank"
+          rel="noreferrer"
           class="flex items-center font-medium underline transition-colors underline-offset-4 dark:hover:text-white hover:text-black"
         >
           <img src="/nuxt.svg" class="h-6 mx-2" />
@@ -31,17 +35,19 @@
       </div>
     </div>
     <div class="flex flex-col grow">
-      <a href="https://vercel.com">
+      <a href="https://vercel.com" target="_blank" rel="noreferrer">
         <img
           src="/vercel.svg"
           alt="Vercel Logo"
           class="my-2 text-white dark:text-white"
-          width="{100}"
-          height="{24}"
+          width="100"
+          height="24"
         />
       </a>
       <a
         href="https://github.com/Wejdan-AI/LexNexus"
+        target="_blank"
+        rel="noreferrer"
         class="flex items-center h-8 mt-auto space-x-2 bottom-20 right-20"
       >
         <img src="/github.svg" alt="GitHub Logo" class="h-6 dark:invert" />

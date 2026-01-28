@@ -2,6 +2,10 @@
 export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
+  runtimeConfig: {
+    postgresUrl: process.env.POSTGRES_URL,
+  },
+
   postcss: {
     plugins: {
       tailwindcss: {},
