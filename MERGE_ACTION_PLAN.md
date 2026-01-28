@@ -7,7 +7,7 @@ This document provides a step-by-step action plan to resolve the 65 open pull re
 ## Current Situation
 
 - **Total Open PRs:** 65
-- **Duplicates Identified:** 12 (can be closed immediately)
+- **PRs to Close:** 12 (11 duplicates + 1 incomplete WIP)
 - **Merge Candidates:** 8 PRs ready for merging
 - **Need Review:** 7 PRs require owner decision
 
@@ -90,21 +90,21 @@ This document provides a step-by-step action plan to resolve the 65 open pull re
    - **Action:** Your choice based on target audience
    - **Impact:** Internationalization support
 
-### Week 4: Cleanup (12+ PRs)
+### Week 4: Cleanup
 
-**Goal:** Close duplicate and unnecessary PRs
+**Goal:** Close unnecessary PRs
 
-#### Close These Duplicates Immediately:
+#### PRs to Close:
 
 1. **Chat Duplicates (8 PRs):** #46, #47, #48, #49, #51, #52, #56, #57
-   - **Reason:** Duplicate of PR #50 or inferior implementations
+   - **Reason:** Duplicate implementations (close after merging PR #50, or close all if chat feature not wanted)
    - **Action:** Add comment explaining closure, then close
 
 2. **Analytics Duplicates (3 PRs):** #36, #39, #42
-   - **Reason:** Duplicate of PR #43
+   - **Reason:** Duplicate implementations (close after merging PR #43)
    - **Action:** Close after merging PR #43 (or close all if you don't want analytics)
 
-3. **WIP PR:** #58
+3. **Incomplete Work (1 PR):** #58
    - **Reason:** Work in progress, not completed
    - **Action:** Close or ask author to complete
 
@@ -194,7 +194,7 @@ If you're unsure about any PR:
 **Immediate Actions:**
 1. Merge 5 infrastructure PRs (week 1)
 2. Decide on features (chat, AI SDK) and merge chosen ones (week 2)
-3. Close 12 duplicate PRs (week 4)
+3. Close 11 duplicate PRs + 1 incomplete WIP (week 4)
 4. Review and decide on remaining 7 PRs (week 4)
 
 **Time Estimate:** 2-4 hours spread over 4 weeks (assuming testing time)

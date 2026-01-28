@@ -22,7 +22,7 @@ Step-by-step action plan for the repository owner with:
 
 ## Key Findings
 
-- **12 duplicate PRs** should be closed (8 chat implementations, 3 analytics, 1 WIP)
+- **12 PRs to close:** 11 duplicates (8 chat, 3 analytics) + 1 incomplete WIP
 - **5 high-priority PRs** should be merged first (infrastructure and critical fixes)
 - **3 feature PRs** require owner decision (chat system, AI SDK, code cleanup)
 - **7 PRs** need additional review before deciding
@@ -49,7 +49,7 @@ However, I **can** provide comprehensive analysis and recommendations, which is 
 - **Total PRs analyzed:** 65
 - **Documents created:** 2 (analysis + action plan)
 - **PRs recommended for immediate merge:** 5
-- **PRs recommended for closure:** 12
+- **PRs recommended for closure:** 12 (11 duplicates + 1 incomplete)
 - **Time to execute plan:** 2-4 hours over 4 weeks
 
 ## Next Steps
