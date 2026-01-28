@@ -1,8 +1,20 @@
 import postgres from 'postgres'
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' })
+let sql: ReturnType<typeof postgres> | null = null
+
+function getPostgresClient() {
+  if (!sql) {
+    const config = useRuntimeConfig()
+    if (!config.postgresUrl) {
+      throw new Error('POSTGRES_URL is not configured. Please set the POSTGRES_URL environment variable.')
+    }
+    sql = postgres(config.postgresUrl, { ssl: 'require' })
+  }
+  return sql
+}
 
 async function seed() {
+  const sql = getPostgresClient()
   const createTable = await sql`
     CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
@@ -40,6 +52,7 @@ async function seed() {
   }
 }
 export default defineEventHandler(async () => {
+  const sql = getPostgresClient()
   const startTime = Date.now()
   try {
     const users = await sql`SELECT * FROM profiles`
